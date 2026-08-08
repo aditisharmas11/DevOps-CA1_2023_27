@@ -15,7 +15,7 @@
 
 **Problem Statement Link:** [2nd NextGen Hackathon 2026](https://unstop.com/hackathons/2nd-nextgen-hackathon-2026-soft-computing-research-society-new-delhi-delhi-1722019)
 
-**Project Repo:** [GenDelta/cnn-ids](https://github.com/GenDelta/cnn-ids)
+**Project Repo:** [Link](https://github.com/GenDelta/cnn-ids)
 
 **Proof of Participation:**
 
