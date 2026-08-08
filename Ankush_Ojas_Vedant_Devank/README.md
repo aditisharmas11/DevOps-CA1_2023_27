@@ -17,8 +17,6 @@
 
 **Project Repo:** [GenDelta/cnn-ids](https://github.com/GenDelta/cnn-ids)
 
-**Organization:** [GenDelta](https://github.com/GenDelta)
-
 **Proof of Participation:**
 
 ![Proof of participation](assets/proof-of-participation.png)
