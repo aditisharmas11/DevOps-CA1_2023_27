@@ -1,0 +1,21 @@
+.git
+.gitignore
+.github
+.venv
+venv
+__pycache__
+*.py[cod]
+.pytest_cache
+.ruff_cache
+data
+models
+submissions
+reports/figures
+reports/metrics.json
+reports/oof_predictions.csv
+plans
+*.log
+.DS_Store
+
+# tests/ is deliberately NOT excluded: `docker run <image> make test` verifies the
+# image without a full training run, and the fixtures are a few kilobytes.
