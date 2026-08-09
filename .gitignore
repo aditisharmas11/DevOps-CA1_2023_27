@@ -1,0 +1,113 @@
+# ------------------------------
+
+# Python cache
+
+# ------------------------------
+
+**pycache**/
+*.pyc
+*.pyo
+*.pyd
+
+# ------------------------------
+
+# Virtual environments
+
+# ------------------------------
+
+venv/
+venv311/
+.env
+.venv/
+
+# ------------------------------
+
+# Jupyter Notebook
+
+# ------------------------------
+
+.ipynb_checkpoints/
+
+# ------------------------------
+
+# Dataset / Data files (IGNORE)
+
+# ------------------------------
+
+data/
+*.csv
+*.xlsx
+*.json
+
+# ------------------------------
+
+# Allow ONLY results CSVs
+
+# ------------------------------
+
+!results/
+!results/*.csv
+
+# ------------------------------
+
+# Model files (IGNORE globally)
+
+# ------------------------------
+
+*.pkl
+*.h5
+*.joblib
+
+# Allow ONLY models folder
+
+!models/
+!models/*.pkl
+!models/*.h5
+!models/*.joblib
+
+# ------------------------------
+
+# Logs & temp files
+
+# ------------------------------
+
+*.log
+temp/
+tmp/
+
+# ------------------------------
+
+# OS / system files
+
+# ------------------------------
+
+.DS_Store
+Thumbs.db
+
+# ------------------------------
+
+# IDE / Editor files
+
+# ------------------------------
+
+.vscode/
+.idea/
+
+# ------------------------------
+
+# Build / distribution
+
+# ------------------------------
+
+build/
+dist/
+*.egg-info/
+
+# ------------------------------
+
+# Misc env files
+
+# ------------------------------
+
+.env.local
+.env.*.local

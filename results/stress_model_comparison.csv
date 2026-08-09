@@ -1,0 +1,4 @@
+Model,Accuracy
+Random Forest,0.9134615384615384
+XGBoost,0.9134615384615384
+Stacking Ensemble,0.9134615384615384
