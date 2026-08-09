@@ -1,0 +1,279 @@
+import { BasePage } from "@/Components/design-elements";
+import { HeaderTimeRange } from "@/Components/common";
+import Stack from "@mui/material/Stack";
+import {
+	HistogramStatus,
+	RadialAvgResponse,
+	HistogramDetails,
+	HeaderMonitorControls,
+	HeaderGeoTabs,
+	GeoChecksMap,
+} from "@/Components/monitors";
+import { TrendingUp, AlertTriangle, Wrench } from "lucide-react";
+import Alert from "@mui/material/Alert";
+import { ChecksTable } from "@/Pages/Uptime/Details/Components/ChecksTable";
+import { GeoChecksTable } from "@/Pages/Uptime/Details/Components/GeoChecksTable";
+import { MonitorStatBoxes } from "@/Components/monitors";
+
+import { useTheme } from "@mui/material/styles";
+import { useIsAdmin } from "@/Hooks/useIsAdmin";
+import { useState, useMemo } from "react";
+import { useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { useGet } from "@/Hooks/UseApi";
+import { type MonitorDetailsResponse, supportsGeoCheck } from "@/Types/Monitor";
+import type { ChecksResponse } from "@/Types/Check";
+import type {
+	GeoChecksResult,
+	FlatGeoChecksResponse,
+	GeoContinent,
+} from "@/Types/GeoCheck";
+import type { RootState } from "@/Types/state";
+import { formatDateWithTz } from "@/Utils/TimeUtils";
+import { t } from "i18next";
+import { Typography } from "@mui/material";
+
+const certificateDateFormat = "MMM D, YYYY h A";
+
+interface CertificateResponse {
+	certificateDate: string;
+}
+
+const UptimeDetailsPage = () => {
+	const theme = useTheme();
+	const isAdmin = useIsAdmin();
+	const { monitorId } = useParams<{ monitorId: string }>();
+	const uiTimezone = useSelector((state: RootState) => state.ui.timezone);
+
+	const [page, setPage] = useState<number>(0);
+	const [rowsPerPage, setRowsPerPage] = useState<number>(5);
+	const [geoPage, setGeoPage] = useState<number>(0);
+	const [geoRowsPerPage, setGeoRowsPerPage] = useState<number>(5);
+	const [dateRange, setDateRange] = useState<string>("recent");
+	const [selectedLocation, setSelectedLocation] = useState<GeoContinent>("NA");
+
+	const monitorDetailsUrl = useMemo(() => {
+		if (!monitorId) {
+			return null;
+		}
+		const params = new URLSearchParams();
+		params.append("dateRange", dateRange);
+		return `/monitors/uptime/details/${monitorId}?${params.toString()}`;
+	}, [monitorId, dateRange]);
+
+	const {
+		data: monitorDetailsData,
+		isLoading: monitorIsLoading,
+		refetch: refetchMonitor,
+	} = useGet<MonitorDetailsResponse>(
+		monitorDetailsUrl,
+		{},
+		{ refreshInterval: 10000, keepPreviousData: true, revalidateOnFocus: false }
+	);
+
+	const monitorData = monitorDetailsData?.monitorData;
+
+	const monitor = monitorData?.monitor;
+	const monitorStats = monitorDetailsData?.monitorStats ?? null;
+
+	// Certificate fetch - only for HTTP monitors
+	const certificateUrl = useMemo(() => {
+		if (!monitorId || monitor?.type !== "http") {
+			return null;
+		}
+		return `/monitors/certificate/${monitorId}`;
+	}, [monitorId, monitor?.type]);
+
+	const { data: certificateData } = useGet<CertificateResponse>(
+		certificateUrl,
+		{},
+		{ revalidateOnFocus: false }
+	);
+
+	const certificateExpiry = useMemo(() => {
+		if (!certificateData?.certificateDate) {
+			return undefined;
+		}
+		return (
+			formatDateWithTz(
+				certificateData.certificateDate,
+				certificateDateFormat,
+				uiTimezone
+			) ?? "N/A"
+		);
+	}, [certificateData, uiTimezone]);
+
+	const checksUrl = useMemo(() => {
+		if (!monitorId || !monitor?.type) {
+			return null;
+		}
+		const params = new URLSearchParams();
+		params.append("type", monitor.type);
+		params.append("sortOrder", "desc");
+		params.append("dateRange", dateRange);
+		params.append("page", String(page));
+		params.append("rowsPerPage", String(rowsPerPage));
+		return `/checks/${monitorId}?${params.toString()}`;
+	}, [monitorId, monitor?.type, dateRange, page, rowsPerPage]);
+
+	const { data: checksData, isLoading: checksIsLoading } = useGet<ChecksResponse>(
+		checksUrl,
+		{},
+		{ keepPreviousData: true, revalidateOnFocus: false }
+	);
+
+	const geoChecksUrl = useMemo(() => {
+		if (!monitorId || !supportsGeoCheck(monitor?.type) || !monitor?.geoCheckEnabled) {
+			return null;
+		}
+		const params = new URLSearchParams();
+		params.append("dateRange", dateRange);
+		params.append("continent", selectedLocation);
+		return `/monitors/${monitorId}/geo-checks?${params.toString()}`;
+	}, [monitorId, monitor?.type, monitor?.geoCheckEnabled, dateRange, selectedLocation]);
+
+	const { data: geoGroupedData } = useGet<GeoChecksResult>(
+		geoChecksUrl,
+		{},
+		{ keepPreviousData: true, revalidateOnFocus: false }
+	);
+
+	const geoGroupedChecks = geoGroupedData?.groupedGeoChecks ?? [];
+
+	// Fetch paginated geo checks for the table
+	const geoChecksTableUrl = useMemo(() => {
+		if (!monitorId || !supportsGeoCheck(monitor?.type) || !monitor?.geoCheckEnabled) {
+			return null;
+		}
+		const params = new URLSearchParams();
+		params.append("sortOrder", "desc");
+		params.append("dateRange", dateRange);
+		params.append("page", String(geoPage));
+		params.append("rowsPerPage", String(geoRowsPerPage));
+		return `/geo-checks/${monitorId}?${params.toString()}`;
+	}, [
+		monitorId,
+		monitor?.type,
+		monitor?.geoCheckEnabled,
+		dateRange,
+		geoPage,
+		geoRowsPerPage,
+	]);
+
+	const { data: geoChecksTableData } = useGet<FlatGeoChecksResponse>(
+		geoChecksTableUrl,
+		{},
+		{ keepPreviousData: true, revalidateOnFocus: false }
+	);
+
+	if (!monitorData) {
+		return null;
+	}
+
+	if (!monitor) {
+		return null;
+	}
+
+	const geoChecksForTable = geoChecksTableData?.geoChecks ?? [];
+	const geoChecksCount = geoChecksTableData?.geoChecksCount ?? 0;
+
+	const geoLocations = monitor.geoCheckLocations;
+
+	const checks = checksData?.checks ?? [];
+	const checksCount = checksData?.checksCount ?? 0;
+
+	return (
+		<BasePage>
+			<HeaderMonitorControls
+				path="uptime"
+				monitor={monitor}
+				isAdmin={isAdmin}
+				refetch={refetchMonitor}
+			/>
+			{monitor.status === "maintenance" && (
+				<Alert
+					severity="warning"
+					icon={<Wrench size={20} />}
+					sx={{
+						borderRadius: "8px",
+						fontWeight: 500,
+					}}
+				>
+					{t("pages.uptime.details.maintenanceAlert")}
+				</Alert>
+			)}
+			<MonitorStatBoxes
+				monitor={monitor}
+				monitorStats={monitorStats}
+				certificateExpiry={certificateExpiry}
+			/>
+			<HeaderTimeRange
+				isLoading={monitorIsLoading || checksIsLoading}
+				hasDateRange={true}
+				dateRange={dateRange}
+				setDateRange={setDateRange}
+			/>
+
+			<Stack
+				direction={{ xs: "column", md: "row" }}
+				gap={theme.spacing(8)}
+			>
+				<HistogramStatus
+					title={t("common.charts.labels.uptime")}
+					icon={<TrendingUp />}
+					checks={monitorData?.groupedUpChecks ?? []}
+					range={dateRange}
+				/>
+				<HistogramStatus
+					title={t("common.charts.labels.downtime")}
+					icon={<AlertTriangle />}
+					checks={monitorData?.groupedDownChecks ?? []}
+					range={dateRange}
+				/>
+				<RadialAvgResponse
+					avg={monitorStats?.avgResponseTime || 0}
+					max={500}
+				/>
+			</Stack>
+			<HistogramDetails
+				checks={monitorData.groupedChecks}
+				range={dateRange}
+			/>
+			<ChecksTable
+				checks={checks}
+				count={checksCount}
+				page={page}
+				setPage={setPage}
+				rowsPerPage={rowsPerPage}
+				setRowsPerPage={setRowsPerPage}
+			/>
+
+			{monitor?.geoCheckEnabled && (
+				<>
+					<Typography variant="h1">Location breakdown</Typography>
+					<HeaderGeoTabs
+						geoCheckEnabled={monitor?.geoCheckEnabled ?? false}
+						locations={geoLocations}
+						selectedLocation={selectedLocation}
+						onLocationChange={setSelectedLocation}
+					/>
+					<HistogramDetails
+						checks={geoGroupedChecks}
+						range={dateRange}
+					/>
+					<GeoChecksTable
+						geoChecks={geoChecksForTable}
+						count={geoChecksCount}
+						page={geoPage}
+						setPage={setGeoPage}
+						rowsPerPage={geoRowsPerPage}
+						setRowsPerPage={setGeoRowsPerPage}
+					/>
+					<GeoChecksMap geoChecks={geoChecksForTable} />
+				</>
+			)}
+		</BasePage>
+	);
+};
+
+export default UptimeDetailsPage;

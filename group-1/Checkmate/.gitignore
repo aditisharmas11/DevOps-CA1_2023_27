@@ -1,0 +1,10 @@
+.idea
+.vscode
+.VSCodeCounter
+*.sh
+mongo
+node_modules/
+docs/architecture
+docs/reviews
+docs/todo
+docs/frontend

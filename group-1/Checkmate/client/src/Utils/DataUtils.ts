@@ -1,0 +1,116 @@
+// Interpolate color between three theme colors over 0-100 range.
+// 0-50 => start (success.light), 50-75 => mid (warning.light), 75-100 => end (error.light)
+export const getResponseColor = (
+	ms: number,
+	colors: {
+		start: string | undefined;
+		mid: string | undefined;
+		end: string | undefined;
+	}
+): string => {
+	// New ranges with open high end:
+	// 0–300ms: interpolate start (good) -> mid (warning)
+	// 300–600ms: interpolate mid (warning) -> end (error)
+	// >600ms: solid end (error)
+	// MUI default success/warning/error.main values, used only when the caller
+	// fails to pass theme colors (defensive — keeps the gradient meaningful).
+	const safe = { ...colors };
+	if (!safe.start) safe.start = "#4caf50";
+	if (!safe.mid) safe.mid = "#ff9800";
+	if (!safe.end) safe.end = "#f44336";
+
+	const toHex = (c: number) => c.toString(16).padStart(2, "0");
+	const clamp = (n: number) => Math.min(255, Math.max(0, Math.round(n)));
+	const rgbToHex = (r: number, g: number, b: number) =>
+		`#${toHex(clamp(r))}${toHex(clamp(g))}${toHex(clamp(b))}`;
+
+	const normalizeToHex = (value: string) => {
+		const v = value.trim();
+		if (v.startsWith("#")) {
+			const h = v.slice(1);
+			const full =
+				h.length === 3
+					? h
+							.split("")
+							.map((c) => c + c)
+							.join("")
+					: h.substring(0, 6);
+			return `#${full.toLowerCase()}`;
+		}
+		const m = v
+			.replace(/\s+/g, "")
+			.match(/^rgba?\((\d{1,3}),(\d{1,3}),(\d{1,3})(?:,(0|0?\.\d+|1))?\)$/i);
+		if (m) {
+			const r = parseInt(m[1], 10);
+			const g = parseInt(m[2], 10);
+			const b = parseInt(m[3], 10);
+			return rgbToHex(r, g, b);
+		}
+		// Fallback neutral
+		return "#7f7f7f";
+	};
+
+	const parseHex = (hex: string) => {
+		const h = hex.replace("#", "");
+		const full =
+			h.length === 3
+				? h
+						.split("")
+						.map((c) => c + c)
+						.join("")
+				: h;
+		const n = parseInt(full, 16);
+		return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+	};
+	const mix = (a: number, b: number, t: number) => Math.round(a + (b - a) * t);
+
+	const v = Math.max(0, ms);
+	if (v <= 300) {
+		const t = v / 300; // 0..1 from start->mid
+		const s = parseHex(normalizeToHex(safe.start));
+		const m = parseHex(normalizeToHex(safe.mid));
+		const r = mix(s.r, m.r, t);
+		const g = mix(s.g, m.g, t);
+		const b = mix(s.b, m.b, t);
+		return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+	}
+	if (v <= 600) {
+		const t = (v - 300) / 300; // 0..1 from mid->end
+		const m = parseHex(normalizeToHex(safe.mid));
+		const e = parseHex(normalizeToHex(safe.end));
+		const r = mix(m.r, e.r, t);
+		const g = mix(m.g, e.g, t);
+		const b = mix(m.b, e.b, t);
+		return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+	}
+	return normalizeToHex(safe.end);
+};
+
+const MIN_HEIGHT_PCT = 8;
+const CAP_PERCENTILE = 95;
+
+const percentile = (sortedValues: number[], p: number): number => {
+	const index = (p / 100) * (sortedValues.length - 1);
+	const lower = Math.floor(index);
+	const upper = lower + 1;
+	const weight = index % 1;
+	if (upper >= sortedValues.length) return sortedValues[lower];
+	return sortedValues[lower] * (1 - weight) + sortedValues[upper] * weight;
+};
+
+export const computeBarHeights = (
+	checks: { responseTime?: number | null }[]
+): number[] => {
+	const values = checks.map((check) => {
+		return typeof check.responseTime === "number" && Number.isFinite(check.responseTime)
+			? Math.max(0, check.responseTime)
+			: 0;
+	});
+
+	const sorted = values.slice().sort((a, b) => a - b);
+	const cap = percentile(sorted, CAP_PERCENTILE);
+	if (cap <= 0) return values.map(() => MIN_HEIGHT_PCT);
+	return values.map((value) => {
+		return Math.max(MIN_HEIGHT_PCT, Math.min(100, (value / cap) * 100));
+	});
+};

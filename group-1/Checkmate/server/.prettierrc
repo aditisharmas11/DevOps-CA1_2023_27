@@ -1,0 +1,25 @@
+{
+	"printWidth": 150,
+	"useTabs": true,
+	"tabWidth": 2,
+	"singleQuote": false,
+	"bracketSpacing": true,
+	"proseWrap": "preserve",
+	"bracketSameLine": false,
+	"singleAttributePerLine": true,
+	"semi": true,
+	"jsxSingleQuote": false,
+	"quoteProps": "as-needed",
+	"arrowParens": "always",
+	"trailingComma": "es5",
+	"htmlWhitespaceSensitivity": "css",
+	"plugins": ["prettier-plugin-ini"],
+	"overrides": [
+		{
+			"files": [".env", ".env.*"],
+			"options": {
+				"parser": "ini"
+			}
+		}
+	]
+}

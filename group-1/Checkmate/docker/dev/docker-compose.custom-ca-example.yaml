@@ -1,0 +1,14 @@
+# Dev/Test only: Not required in production
+# Example Docker Compose configuration for custom CA trust
+# This file demonstrates how to configure Checkmate to trust custom CAs
+#
+# Usage: docker compose -f docker-compose.yaml -f docker-compose.custom-ca-example.yaml up
+
+services:
+  checkmate:
+    environment:
+      # Mount your custom CA certificate
+      NODE_EXTRA_CA_CERTS: /certs/custom-ca.pem
+    volumes:
+      # Mount the certs directory (read-only for security)
+      - ./certs:/certs:ro

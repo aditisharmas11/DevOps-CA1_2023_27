@@ -1,0 +1,23 @@
+{
+	"compilerOptions": {
+		"allowJs": true,
+		"checkJs": false,
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["./src/*"]
+		},
+		"outDir": "./dist",
+		"strict": true,
+		"noImplicitAny": true,
+		"esModuleInterop": true,
+		"module": "nodenext",
+		"moduleResolution": "nodenext",
+		"skipLibCheck": true,
+		"noUncheckedIndexedAccess": true,
+		"isolatedModules": true,
+		"resolveJsonModule": true,
+		"noEmit": true
+	},
+	"include": ["src", "openapi", "scripts"],
+	"exclude": ["tests", "dist", "node_modules"]
+}
