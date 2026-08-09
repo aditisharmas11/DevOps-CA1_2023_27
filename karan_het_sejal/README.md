@@ -1,7 +1,7 @@
 # CA-1 Task 3 Submission: Open Source Contribution on Rex-Socket
 
 ## Group Information
-- **Group Members:** Karan Desai, Het Jasani, Sejal More 
+- **Group Members:** Karan Desai, Het Jasani, Sejal More, Dakshit Singh
 
 ## Target Repository
 - **Repository:** [rapid7/rex-socket](https://github.com/rapid7/rex-socket)
