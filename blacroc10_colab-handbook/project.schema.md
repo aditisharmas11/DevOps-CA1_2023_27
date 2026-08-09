@@ -1,0 +1,569 @@
+# `.github/project.yml` — field reference
+
+The per-repo marker file. One flat YAML document, committed, at
+`.github/project.yml`. It exists so a human or agent can learn the repo's state
+with zero API calls — including in repos that have no GitHub remote at all.
+
+Keep it flat. No nested maps, no anchors — the readers (the audit tool, the
+`colab` CLI, CI resolution steps) deliberately use a minimal YAML subset:
+`key: value` scalars, plus **lists of scalars** in either form (`[a, b]`, or
+`- a` lines indented under the key). Anything else is reported as a parse
+finding rather than half-read.
+
+## Fields
+
+### `tier` — required
+
+`A`, `B` or `C`. The tiers differ in **how many gates stand between a merge and
+users**:
+
+| Tier | Production | Gates | Shape |
+|---|---|---|---|
+| `B` | none | 0 | one branch, `main`. Nothing to deploy. |
+| `C` | yes | 1 | promotion `dev` → `main` **is** the deploy. |
+| `A` | yes | 2 | promotion verifies; a **tag** deploys. |
+
+- `B` — no production target. The default; an imminent launch is still `B`.
+- `C` — live, but the promotion itself ships it. `C` is `A` minus the tag.
+- `A` — live, and a deliberate release artifact (the tag) gates production.
+
+**A/B/C are labels, not grades.** Read naively `C` looks like a worse `B`, but
+`B` has no production at all — a tier B repo cannot break anything for users,
+because there are no users. The letters name *shapes*, not maturity, and moving
+from `B` to `C` is not a demotion any more than `C` to `A` is a promotion in
+quality. Pick the one that describes your pipeline truthfully; a repo claiming a
+gate it does not have is the failure this file exists to prevent.
+
+Whether production exists is the tier question. *How* it deploys — a tag, a
+`main` push, a human following a runbook — is [`deploy`](#deploy--required)'s
+job, and the two must agree.
+
+### `trunk` — required
+
+The branch sessions merge into. Must be `dev` when `tier: C`; `main` when
+`tier: B`. On `tier: A` it is `dev` **or**, when `deploy: tag`, `main` (see the
+exception below). Any other value is a finding.
+
+This holds for hand-deployed Tier A repos too (`deploy: manual`), and the shape
+earns its keep there rather than being ceremony: `main` is **what is currently
+running on the host**, `dev` is where sessions land, and the `dev` → `main`
+promotion is the deliberate "I am about to deploy" act. Without automation,
+that merge is the only record of what shipped and when — collapsing the two
+branches would erase it.
+
+Tier C keeps the identical split for the identical reason. There `main` is
+literally what is live — the promotion deploys it — so collapsing the branches
+would remove the only moment at which anyone decides to ship.
+
+**The exception: a tag-gated Tier A may run a single trunk `main`.** When
+`deploy: tag`, the **tag** is the deliberate release artifact, so the tag itself
+marks the release boundary — the last `v*.*.*` is "what shipped and when", the
+job the `dev` → `main` split does on a hand-deployed repo. A second branch
+marking the same boundary is then redundant, so such a repo may land day-to-day
+work on `main` and cut releases by tag (a release script fast-forwards a
+long-lived release branch an external poller redeploys, or a workflow ships on
+the tag). The tier is defined by the promotion **gate** — a version tag — not by
+the trunk **name**. This applies **only** to `deploy: tag`: `manual` and
+`push-main` have no tag to mark the boundary, so they keep the `dev`/`main`
+split, and `main` on either of those is still a finding.
+
+### `production` — required
+
+The production URL as a string, or `null`. Must be non-null when `tier: A` or
+`tier: C`, `null` when `tier: B`.
+
+### `deploy` — required
+
+**How** the repo reaches production — never **whether** it is Tier A. The tier
+test is "does a deploy target exist today?" ([CONVENTIONS.md §9](CONVENTIONS.md#9-adopting-this));
+`deploy` only describes the mechanism a Tier A repo uses.
+
+- `tag` — pushing a `v*.*.*` tag deploys. The tag's path to production must be
+  committed: either an **in-repo deploy workflow** (`.github/workflows/deploy-*.yml`
+  firing on the tag), **or**, when an **external** deployer ships it — a GitOps
+  poller that fast-forwards a release branch on the tag, with no in-repo workflow
+  by design — a [`runbook:`](#runbook--required-when-an-out-of-ci-deploy-has-no-workflow)
+  documenting that path.
+- `manual` — production exists, but shipping is a **human running a documented
+  procedure** (rsync + `docker compose up -d --build`, an upload, a console
+  action) with no workflow and no tag trigger. Requires [`runbook:`](#runbook--required-when-an-out-of-ci-deploy-has-no-workflow).
+- `none` — nothing deploys. Required value for `tier: B`.
+- `push-main` — a push to `main` **is** the deploy. The required value for
+  [`tier: C`](#tier--required), and a finding on `tier: A` — see below.
+
+`push-main` describes a real mechanism truthfully: for the repos using it,
+pushing `main` really does deploy. It has a home — **tier C is exactly this
+shape** — and the finding is on the **combination** `tier: A` + `push-main`,
+never on the value itself.
+
+**It is a tier mismatch, not a bad way to deploy.** Deploying on a `main` push
+is a reasonable choice for plenty of software. What it cannot do is meet Tier
+A's contract, which is that a **deliberate release artifact gates production**
+— promote code now, decide to ship it later ([§6](CONVENTIONS.md#6-releases)).
+Where every push to `main` reaches users, there is no such artifact and no such
+gate, so a repo claiming Tier A is claiming a guarantee its pipeline does not
+provide. Options:
+
+1. **Retier to `C`** — usually the right answer. Tier C *is* this shape, so
+   nothing about the pipeline changes; the descriptor simply stops claiming a
+   gate that was never there. This is the option that did not exist when the
+   finding was first written.
+2. **Migrate the pipeline to a tag trigger** → `deploy: tag`, staying tier A.
+   Choose this when the site has earned a release ritual someone will actually
+   honour.
+3. **If shipping really is run by hand**, say so → `deploy: manual` plus
+   [`runbook:`](#runbook--required-when-an-out-of-ci-deploy-has-no-workflow). Not a downgrade — an
+   accurate description, which is always worth more than a flattering one.
+
+A tag ritual nobody honours is worse than no tag ritual: it puts a gate in the
+docs and not in the pipeline, and then people trust the docs.
+
+`manual` exists because the alternatives were both false. A hand-deployed live
+repo declaring `deploy: tag` fails the deploy-workflow rule; declaring `tier: B`
+forces `production: null`, which states that a live product does not exist. A
+repo whose documentation lies is the outcome this handbook exists to prevent
+([§8](CONVENTIONS.md#8-conformance-and-reconciliation)), so the vocabulary has
+to cover the case honestly.
+
+**`manual` grants no automation.** It is strictly *less* automated than `tag`,
+and the permission ladder treats it that way: `colab promote` allows an
+unattended promotion only on a `deploy: tag` repo, where promotion is
+verification-only. On a `manual` repo, promotion is the deliberate "I am about
+to deploy" act, so it needs `COLAB_HUMAN=1` — exactly like `push-main`, and
+`promotion: main-loop` cannot lower it. See [`promotion`](#promotion--optional).
+
+### `runbook` — required when an out-of-CI deploy has no workflow
+
+```yaml
+runbook: docs/deploy.md
+```
+
+Repo-relative path to the committed document describing how production is
+reached: the hosts, the commands or the external system, the order, and how to
+verify it worked. The audit checks that the path actually exists.
+
+Required in the two cases where the deploy runs **outside** CI, so no workflow
+file documents it:
+
+- `deploy: manual` — a **human** runs the procedure. Always required.
+- `deploy: tag` **with no in-repo deploy workflow** — an **external** deployer
+  runs it (a GitOps poller fast-forwards a release branch on the tag). Required
+  there because the tag's path to production is otherwise written down nowhere. A
+  `deploy: tag` repo whose own CI holds the deploy job documents itself in that
+  workflow and needs no runbook.
+
+It is required because an out-of-CI deploy nobody wrote down is how a repo ends
+up with exactly one person — or one poller nobody can find — able to ship it.
+Automated in-repo deploys document themselves in the workflow file; anything else
+has to be written down or it is not knowledge, it is folklore. Omit the key when
+an in-repo deploy workflow already answers "how does this reach production?".
+
+### `stack` — required
+
+**Free-form string.** Describe the repo honestly: `laravel-inertia`,
+`capacitor-vite`, `astro-static`, `go-cli`, … There is no fixed list — a closed
+enum was tried and immediately failed on a repo that fit no bucket. Used by
+humans and agents for orientation, never for machine dispatch.
+
+### `integration` — optional
+
+```yaml
+trunk: dev
+integration:
+  - v2          # a long-lived line; it merges into trunk by hand, when it is ready
+```
+
+Additional **long-lived integration branches** — lines that accumulate work for a
+release far enough out that they are not merged into trunk for weeks. Empty and
+absent are the same thing, and absent is the normal case.
+
+Declaring a line does three things and no more: `colab worktree new --base <line>`
+will cut from it, `colab ship` merges a worktree back into **the base it was cut
+from**, and the line is guarded and exempted the way trunk is (no raw pushes, no
+branch-name regex, not a "ghost" when a workflow names it).
+
+**Why this is not `trunk`.** The tempting alternative is to let a repo declare its
+long-lived line as trunk and be done. That does not stay on the development side of
+the fence: on Tiers A and C, `trunk` **is** the production spine — it is the branch
+`colab promote` merges into the release branch. Naming the line as trunk points the
+promotion path straight at it, which is the opposite of the intent. So `trunk` stays
+tier-locked ([above](#trunk--required)) and this is a separate axis.
+
+**The guarantee: nothing in the promote / tag / deploy path reads this field.** A
+branch on this axis cannot reach production by construction, not by discipline. The
+only way work on a line reaches users is for a human to merge that line into trunk
+and then promote — and `colab ship` refuses the line → trunk merge even under
+[`autonomy: auto-trunk`](#autonomy--optional), because a long divergence meeting the
+branch that promotes is an integration event of the same weight as a promotion.
+
+Validity: an entry may not be `trunk`'s value, may not be `main` (the release branch
+on Tiers A and C, the trunk on Tier B), may not be the word `trunk` (a role, never a
+branch name), and **must exist as a branch**. A declared line nobody ever cut is the
+same failure as a release branch nothing consumes, so the audit reports it.
+
+CI on a line is checked but **advisory**: a line with no workflow triggering on push
+to it gets a warning, never a failure. Merges into it really do run zero CI, which is
+worth saying — but a line that is not yet gated is a normal early state, and failing
+the repo for it would push teams back to declaring the line nowhere, which is the
+state this field exists to end. Trunk's CI gate remains a hard requirement.
+
+### `releaseBranch` — optional
+
+```yaml
+tier: A
+trunk: main       # single-trunk, tag-gated — see trunk's exception above
+deploy: tag
+releaseBranch: release
+```
+
+Names the long-lived branch an **external GitOps poller** fast-forwards on release, in
+the single-trunk, tag-gated shape ([`trunk`](#trunk--required)'s exception): day-to-day
+work lands on `main`, and a release script cuts a tag and fast-forwards this *separate*
+branch, which the poller watches and redeploys. Empty and absent are the same thing,
+and absent is the normal case — most Tier A repos deploy from `main` itself and need no
+extra name.
+
+**This is the opposite axis from [`integration`](#integration--optional), not a
+variant of it.** An integration line *accumulates* development work over weeks; a
+release branch is *consumed* — a release script overwrites it wholesale on every tag —
+and it is a **production** ref, exactly the thing `integration:` guarantees never to
+touch. A worktree may never be cut from it or shipped into it; declaring one here grants
+no such base (it is not added to the set [`allowedBases`](#integration--optional)
+computes).
+
+**Why it exists:** between releases, this branch is by construction an ancestor of
+trunk — it was fast-forwarded to trunk's tip as of the last tag, and trunk has since
+moved on. That is indistinguishable, by ancestry alone, from a spent session branch
+whose work already landed — which is exactly what `colab doctor`'s routine-maintenance
+list hunts for. Undeclared, `doctor` prints a ready-to-paste `git push origin --delete`
+for a ref a live deploy pipeline is polling; declaring it here is what lets `doctor`
+tell the two apart (issue #63).
+
+Validity: an entry may not be `trunk`'s value, may not be `main`, may not be the word
+`trunk` (a role, never a branch name), and **must exist as a branch**. Same fail-closed
+rule as `integration:` — a malformed entry is dropped rather than honoured, and the
+audit reports it as a finding rather than silently leaving the real branch unprotected.
+
+### Per-host deploy target — deliberately not a field
+
+Not modeled here, on purpose ([CONVENTIONS.md §2](CONVENTIONS.md#2-tiers)). "Which branch does
+*this checkout* serve" is a fact about one machine, not about the repo — the opposite of
+everything else on this page — so it holds no key in this file, on any tier.
+
+A repo running on more than one host may legitimately want a different answer per host: a dev
+tool serving a built bundle out of its own working tree, rebuilt and restarted whenever *that
+host's* line moves, gated on `HEAD` matching what that host serves. That fact belongs to a
+per-host mechanism the repo owns — an environment variable read by the host's own service
+definitions, or a machine-local config file — the same shape as `colab`'s own cache
+(`~/.colab/state.json`: local, uncommitted, fenced off from VCS and file-sync) rather than a
+schema entry. Putting it here instead (`deploys: { <host>: <branch> }`) would put hostnames into
+a shared, often-public file that drifts the moment a machine is renamed or retired, with nothing
+here able to tell a stale entry from a live one. `integration:` does not cover it either — it
+declares that a line *exists*, never that a given checkout *serves* it.
+
+Whatever mechanism a repo picks, it must **name** the branch it serves, unset-by-default, and
+never widen or disable the gate it overrides — see [CONVENTIONS.md §2](CONVENTIONS.md#2-tiers)
+for why that direction is the only safe one. `trunk:` and `integration:` keep answering only the
+correctness question — what has landed, what is safe to delete, what a new worktree is cut
+from; this axis never reads them and they never read it.
+
+### `ports` — optional
+
+```yaml
+ports: [5220]
+```
+
+TCP ports reserved for this repo's **trunk dev server(s)**. The `colab` CLI
+aggregates `ports:` across all registered repos into the machine-wide reserved
+set and will never allocate these to a worktree — even when the trunk server is
+currently down. One declaration here replaces any hand-maintained central list.
+
+Omit if the repo has no dev server (CLI tools, libraries).
+
+### `worktreePorts` — optional
+
+```yaml
+worktreePorts: [47150, 47199]
+```
+
+A two-element `[lo, hi]` range naming the window that **worktrees of this repo**
+allocate ports from. Distinct from `ports:` — those are the repo's *reserved trunk*
+ports (never handed out); `worktreePorts` is where `colab worktree new` /
+`colab port alloc` *search* for free ones when working on this repo.
+
+Precedence when allocating: explicit `--range`/`--at` flag > this field > the
+machine-global `config.portRange`. Malformed values fall through to the default.
+Keep the window disjoint from every repo's reserved `ports:` — the allocator
+refuses reserved ports anyway, but a disjoint window avoids churn. Parity/pairing
+schemes are not expressed here; use `--at` or a `post-create` hook.
+
+### `autonomy` — optional
+
+```yaml
+autonomy: auto-trunk     # manual (default) · auto-trunk
+```
+
+How much of a session's Phase B (merge to **trunk**) an agent may perform alone.
+
+- `manual` (or absent) — an agent stops after Phase A; a human triggers the merge.
+- `auto-trunk` — an agent may complete the trunk merge itself **through `colab ship`
+  only**, and only when every precondition passes: trunk CI alive and green, no new
+  DB migrations in the branch, no hand-code conflicts after sync-regen. Any ✗ falls
+  back to asking a human.
+
+This grants **trunk** autonomy only. Promotion `dev` → `main`, tags, and anything
+that deploys remain human acts on every repo, always — the field cannot express
+otherwise. The grant lives in the repo file (not the caller's flags) so autonomy is
+a property of the repo's risk profile, reviewed in a commit like any other change.
+
+### `ceremony` — optional
+
+```yaml
+ceremony: standard   # default; omission = standard — no existing repo changes behavior
+ceremony: light      # beta/testing repos: memory ceremony scales down
+```
+
+How much record-keeping DEPTH a session owes this repo — a separate axis from `tier`,
+which counts gates to production ([CONVENTIONS.md §2](CONVENTIONS.md#2-tiers)). Tier
+answers "how many gates stand between a merge and users"; `ceremony` answers "will
+anyone ever comb through this repo's audit trail" — two Tier B repos can be a heavy,
+long-lived codebase and a disposable beta playground, and only this field lets the
+second one stop paying full record-keeping cost for a record nobody will read.
+Descriptive, not evaluative — like `deploy:`. It never says the code matters less; it
+says the repo has opted out of audit-trail depth.
+
+**What `light` relaxes:**
+
+1. **Evidence & narration** — Phase B evidence comments are skipped; the squash's
+   `Closes #N` suffices. Issue narration distills real gotchas only, no progress
+   commentary.
+2. **Readiness ceremony** — triage orders and groups but skips the `deps-checked`
+   labeling pass. Coherent because `light` repos cannot be driven unattended (rule 2
+   below), so nothing consumes the column; an empty readiness column that nothing
+   reads is pure cost.
+3. **Audit severity** — memory-ceremony gaps (empty readiness column, missing
+   evidence, stamp drift on non-CI templates) downgrade to advisories.
+
+**What `light` may never relax:** claim before start · branch-off-trunk & worktree
+discipline · reserved ports · main checkout at rest on trunk · squash + `Closes #N` ·
+Conventional Commits · CI secret scan + build. A beta repo shares the same machine,
+session fleet, port space, and claim state as the most serious repo.
+
+**Two coherence rules, audited:**
+
+1. **`light` requires `production: null`.** A live repo cannot be light — someone's
+   users are behind those merges. `light` + a production URL is a finding, same class
+   as `tier: A` + `push-main`.
+2. **`light` is incompatible with `autonomy: auto-trunk`.** An unattended merge with
+   no evidence trail is a closure nobody watched and nobody can audit. A beta repo
+   that wants unattended ships accepts `standard` — that is the trade.
+
+Known drift risk: a repo marked `light` "for now" that grows real users. Rule 1 is the
+backstop — the moment `production:` gains a URL the audit flags the pair.
+
+**`ceremony: light` also enables solo flow** (`CONVENTIONS.md`, *Solo flow*) — trunk-direct
+commits with no pre-filed issue, claim or worktree, entry-gated by `colab solo`. No new
+field: solo flow is a session-time *option* a light repo permits, not a repo-time state a
+descriptor declares, so there is nothing here for a repo to opt into beyond `light` itself.
+`colab solo` refuses outright on a repo that is neither `writes: serial` nor (legacy)
+`ceremony: light` — see that section for the entry gate and the five rules it never relaxes.
+
+### `writes` — optional
+
+```yaml
+writes: isolated   # default; omission = isolated — no existing repo changes behavior
+writes: serial      # one writer at a time in a place, under a place-claim
+```
+
+Which write-conflict prevention method this repo's sessions use, by default — a separate
+axis from `tier` (gates to production) and from `ceremony` (record-keeping depth). Three
+coherent methods exist: **serial trunk-direct** (one writer, no branch — solo flow is this
+cell), **serial gated** (one writer, still branches for a squash unit or a pre-merge gate),
+and **isolated** (worktrees, no shared mutable state — today's default and the vast
+majority of this fleet). A fourth cell — many units in flight, writing trunk-direct — is
+not a method; it is simply an unlocked repo, and is named incoherent
+(`CONVENTIONS.md` §2, *Writes*).
+
+`writes` says which of those a repo's sessions may use by default; it does **not** say
+whether any given unit of work branches — that stays a per-unit choice inside whichever
+method applies. Two conditions, and only two, make a branch mandatory on a `serial` repo:
+more than one unit in flight, or a gate that must inspect a unit before it lands. "It feels
+safer" is not on that list.
+
+**Deliberately not coupled to `tier`, `production`, or exposure.** A busy repo with three
+concurrent sessions needs isolation regardless of whether it has a production deploy; a
+quiet repo with one session at a time does not need it merely because it is live. The
+correlation seen across today's fleet is caused by *who works a repo*, not by *what
+consumes it* — encoding that correlation as a rule would repeat the same weld `ceremony`
+was introduced to undo. No coherence rule is audited against `tier`/`production` for this
+reason; do not add one.
+
+**No field for the place-claim itself.** The lock that enforces `writes: serial`
+(`CONVENTIONS.md`, *Solo flow* / place-claims) is a fact about one checkout on one
+machine at one moment — the same reasoning that keeps `deploys: {host: branch}` out of
+this schema ([§2](CONVENTIONS.md#2-tiers)) applies here: a path on one host is meaningless
+read from another, so it lives in session state (`~/.colab/state.json`), never in this file.
+
+### `promotion` — optional
+
+```yaml
+promotion: main-loop     # human (default) · main-loop
+```
+
+Who may run the **promotion** (`trunk → main`, via `colab promote`) without a
+per-instance human word. Distinct from **release** (the tag), which is always human.
+
+- `human` (or absent) — promotion needs `COLAB_HUMAN=1`.
+- `main-loop` — the main loop may promote unattended, **but only on a
+  `deploy: tag` repo**, where promotion is verification-only (main runs the heavy
+  suite; nothing deploys).
+
+Unknown values fail closed to `human`. This field **cannot** lower the bar set by
+`deploy:` — on a `deploy: push-main` repo promotion *is* the production deploy, and
+on a `deploy: manual` repo promotion is the human's signal to run the deploy; both
+always require `COLAB_HUMAN=1`. Only `deploy: tag` makes promotion
+verification-only, so only there can `main-loop` apply. Nothing here ever
+authorizes tagging.
+
+The full permission ladder, one rung per boundary:
+**ship** (branch→trunk, gated by `autonomy`) · **promote** (trunk→main, gated by
+`deploy`+`promotion`) · **release** (tag, always human).
+
+### `generated` — optional
+
+```yaml
+generated: ["resources/js/routes/**", "schemas/lock.json"]
+```
+
+Path globs that are **regenerated, not authored** (codegen output, lockfiles).
+`colab ship` treats a sync-merge conflict confined to these as resolvable by the
+repo's `.colab/hooks/pre-ship` regen step instead of forcing a human. Extends the
+built-in default set (`package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`,
+`composer.lock`, `Cargo.lock`, `go.sum`, `dist/`, `build/`, `public/build/`, `.astro/`).
+
+### `node`, `php`, `python` — optional toolchain pins
+
+```yaml
+node: 22
+php: 8.4
+python: 3.13
+```
+
+Explicit toolchain versions. These **win** over the ecosystem manifest per the
+precedence in [CONVENTIONS.md §7](CONVENTIONS.md#7-ci-and-toolchain):
+
+| Key | Manifest it overrides |
+|---|---|
+| `node` | `.nvmrc`, then `package.json → engines.node` |
+| `php` | `composer.json → require.php` |
+| `python` | `.python-version`, then `pyproject.toml → requires-python` |
+
+Use only when the manifest cannot express the truth, or for a deliberate pin —
+the manifest is the normal answer. If neither source declares a version, CI must
+fail, not guess.
+
+**`requirements.txt` is not a manifest for this purpose.** It pins dependencies,
+never the interpreter. A Python repo carrying only a `requirements.txt` has
+declared nothing about which Python it runs on, so it must set `python:` here or
+add a `.python-version` — the alternative is a hardcoded version in CI, which is
+the exact failure this precedence exists to prevent.
+
+When a pin here contradicts the manifest, the audit tool reports it. That is
+intentional: a disagreement is a finding to surface, not to auto-resolve.
+
+## Examples
+
+Tier B (no production yet):
+
+```yaml
+tier: B
+trunk: main
+production: null
+deploy: none
+stack: capacitor-vite
+ports: [5220]
+```
+
+Tier C (live, and the promotion is the deploy — no tag ritual):
+
+```yaml
+tier: C
+trunk: dev
+production: https://site.example.com
+deploy: push-main
+stack: astro-static
+```
+
+Tier A (live product):
+
+```yaml
+tier: A
+trunk: dev
+production: https://app.example.com
+deploy: tag
+stack: laravel-inertia
+ports: [8080, 8081]
+php: 8.4
+```
+
+Tier A, deployed by hand (live, but no workflow and no tag trigger):
+
+```yaml
+tier: A
+trunk: dev
+production: https://app.example.com
+deploy: manual
+runbook: docs/deploy.md
+stack: fastapi + vite spa
+```
+
+Tier A, single-trunk tag-gated, deployed by an external GitOps poller:
+
+```yaml
+tier: A
+trunk: main
+production: https://app.example.com
+deploy: tag
+runbook: docs/deploy.md
+releaseBranch: release
+stack: laravel-inertia
+```
+
+## Validity rules (what the audit tool checks)
+
+| Rule | Failure it prevents |
+|---|---|
+| file present and parseable | undescribed repo — agents guess |
+| `tier` ∈ {A, B, C} | — |
+| `tier: A` → `trunk: dev`, `production` non-null, `deploy` ∈ {`tag`, `manual`} | a release branch nothing consumes |
+| `tier: A` + `deploy: push-main` → **finding**, pointing at tier C | claiming a release gate the pipeline does not have |
+| `tier: C` → `trunk: dev`, `production` non-null, `deploy: push-main`, a deploy workflow exists | a tier whose shape does not match its mechanism |
+| `deploy: tag` (or `push-main`) → a deploy workflow exists | a tier claimed but never wired up |
+| `deploy: manual` → `runbook:` set, and the path exists in the repo | a hand-deploy only one person knows how to run |
+| `tier: B` → `trunk: main`, `deploy: none`, `production: null` | ceremony without benefit |
+| declared `trunk` branch actually exists | docs describing a repo that doesn't exist |
+| every `integration` entry exists, and is not `trunk` / `main` / the word `trunk` | a dev-side line acquiring a path to production |
+| declared `releaseBranch` exists, and is not `trunk` / `main` / the word `trunk` | `colab doctor` misreading a live deploy target as a spent branch and advising its deletion |
+| toolchain pin vs manifest agreement | building on one version, deploying on another |
+| `ceremony` ∈ {`standard`, `light`} when set | a misspelled value silently read as `standard` |
+| `ceremony: light` → `production: null` | a live repo opting out of its own audit trail |
+| `ceremony: light` → not `autonomy: auto-trunk` | an unattended merge with no evidence trail nobody can audit |
+| `writes` ∈ {`isolated`, `serial`} when set | a misspelled value silently read as `isolated` |
+
+`push-main` on a Tier A repo **is a finding** — a mismatch between the
+mechanism and the tier's contract, not a judgement on the mechanism, and the
+usual fix is `tier: C` rather than any pipeline change. (The wording here
+previously promised an advisory that no code ever emitted, so what looked like
+tolerance was in fact total silence — a doc describing behaviour the tool did
+not have.) On Tier B the value is caught by the `deploy: none` rule instead: a
+Tier B repo that deploys is mistiered, whatever mechanism it names.
+
+On Tier C the wrong `deploy` value is likewise redirected rather than merely
+rejected, because each one names a different gate count and therefore a
+different tier: `tag` and `manual` both point back to A (two gates, and a
+promotion that does not itself deploy), `none` points to B.
+
+The runbook path is verified against a **local working tree**. When a repo is
+audited through the GitHub API (an `owner/name` entry) there is no tree to
+stat, and a failed read cannot be told apart from a missing file, so a miss is
+reported as an advisory instead of a violation.

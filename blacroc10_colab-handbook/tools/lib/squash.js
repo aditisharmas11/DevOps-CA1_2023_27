@@ -1,0 +1,459 @@
+'use strict';
+/**
+ * Composing the squash-commit message for `colab ship` (Phase B1).
+ *
+ * This module is PURE — it takes an array of already-read commits and returns a string. All git
+ * I/O stays in the CLI. That split exists so this logic can be unit-tested: `tools/colab` has no
+ * test harness, `tools/lib/*.test.js` is wired into CI, and the bug this module was extracted to
+ * fix was invisible precisely because nothing tested it.
+ *
+ * THE BUG IT FIXES. The subject used to be the branch's NEWEST commit, verbatim. On a well-run
+ * branch the newest commit is the SMALLEST — the docs pass you do last — so `feat` work shipped
+ * under a `docs:` subject. Release notes group on that prefix (CONVENTIONS §4), so the feature was
+ * invisible in the changelog: nothing failed, CI stayed green, the issues closed. Two such subjects
+ * are baked into a published tag and cannot be corrected.
+ *
+ * WHAT REPLACES IT. The subject comes from the HIGHEST-WEIGHT commit on the branch (breaking >
+ * feat > fix > perf > refactor > docs > test > chore), ties going to the OLDEST — the commit that
+ * established what the branch is for; later commits of the same type are follow-ups. A branch with
+ * one commit therefore behaves exactly as before. A branch where nothing carries a Conventional
+ * Commit prefix also falls back to the old behaviour (newest), because there is nothing to weigh.
+ *
+ * WHAT IS DELIBERATELY UNCHANGED. The body design was never at fault: `Closes #N` for every claimed
+ * issue, the other subjects as bullets, `chore(sync)` merge-noise filtered, footers preserved. The
+ * one body change is a consequence of the subject change — since the chosen commit may no longer be
+ * the newest, trailers are harvested from EVERY commit on the branch rather than only the newest,
+ * or a `Co-Authored-By:` on the last commit would now be silently dropped.
+ */
+
+/**
+ * Conventional Commit type → weight. Ordering follows the semantic-release convention that decides
+ * what a change means to a consumer: feat is a minor bump, fix a patch, the rest cosmetic. The
+ * numbers are spaced so a type can be inserted without renumbering; only the ORDER is meaningful.
+ */
+const TYPE_WEIGHT = {
+  feat: 70,
+  fix: 60,
+  perf: 50,
+  refactor: 40,
+  revert: 40,
+  docs: 30,
+  test: 20,
+  build: 15,
+  ci: 15,
+  style: 12,
+  chore: 10,
+};
+
+/** A breaking change outranks every non-breaking one, whatever its type. */
+const BREAKING_BONUS = 1000;
+
+const SUBJECT_RE = /^([a-z]+)(?:\(([^)]*)\))?(!)?:\s*(.+)$/;
+
+/** Trailer keys worth carrying across a squash. An allowlist, not a general trailer parser: a
+ *  loose `^\w+:` rule swallows ordinary prose lines ("Note: ...") and `Closes #N`, which is
+ *  composed separately and must not be duplicated. */
+const TRAILER_RE = /^(?:Co-authored-by|Signed-off-by|Claude-Session|Reviewed-by):\s*\S/i;
+
+/** Sync-merge noise: a commit produced by B0 pulling trunk into the branch, not by the author. */
+function isSyncNoise(subject) {
+  return /^chore\(sync\)/.test(String(subject || ''));
+}
+
+/** Parse a Conventional Commit subject → {type, scope, breaking, description} or null. */
+function parseSubject(subject) {
+  const m = SUBJECT_RE.exec(String(subject || '').trim());
+  if (!m) return null;
+  return { type: m[1], scope: m[2] || null, breaking: !!m[3], description: m[4] };
+}
+
+/**
+ * Weight of one commit. 0 means "carries no Conventional Commit prefix we recognise" — which is a
+ * finding in its own right (§4: an unprefixed commit is invisible in the changelog), but here it
+ * only means the commit cannot claim the subject on merit.
+ */
+function commitWeight(commit) {
+  const parsed = parseSubject(commit && commit.subject);
+  if (!parsed) return 0;
+  const base = TYPE_WEIGHT[parsed.type];
+  if (base === undefined) return 0; // a prefix-shaped word that is not a known type
+  const breaking = parsed.breaking || /^BREAKING[ -]CHANGE:/m.test(String((commit && commit.body) || ''));
+  return base + (breaking ? BREAKING_BONUS : 0);
+}
+
+/**
+ * Commits whose weight is 0, excluding sync-merge noise (#88). Two shapes land here, and both are
+ * the SAME finding `commitWeight`'s comment already names: the type will never win the subject and
+ * will never head a changelog entry titled by it.
+ *
+ *   - no Conventional Commit shape at all ("fixed the thing")
+ *   - a shape that isn't a recognised type — `wip:`, `spike:` — which is the more dangerous of the
+ *     two, because it LOOKS finished. `pickSubjectIndex` cannot tell "this branch has no signal"
+ *     (falls back to newest, harmlessly) apart from "this branch's real headline is invisible to
+ *     the ranking" (a lower-weight RECOGNISED commit wins instead, silently) — both just read as
+ *     weight 0. #88 Case 1 is exactly this: a branch shipping a convention plus +104 lines of
+ *     CONVENTIONS.md landed titled `fix(labels): correct mechanical-readiness tests…`, because its
+ *     only commit describing the deliverable was typed `wip:`. The incidental `fix` (weight 60) won
+ *     over nothing rather than over the headline — the `wip` commit was never in the race.
+ *
+ * Named for a caller to WARN with, not to decide with — `pickSubjectIndex` already resolves ties
+ * and fallbacks correctly on its own terms; this only surfaces the blind spot at ship time instead
+ * of only at changelog-reading time, which is CONVENTIONS.md §4 undetected until now.
+ */
+function unweightedCommits(commits) {
+  return (Array.isArray(commits) ? commits : [])
+    .filter((c) => c && !isSyncNoise(c.subject))
+    .filter((c) => commitWeight(c) === 0);
+}
+
+/**
+ * Index of the commit whose subject should title the squash. `commits` is NEWEST-FIRST (git log
+ * order).
+ *
+ * Rules, in order:
+ *   1. sync-merge noise never titles a squash (unless it is all there is);
+ *   2. highest weight wins;
+ *   3. ties go to the OLDEST of the tied commits — on a branch of three `feat`s, the first one
+ *      names the branch's purpose and the rest extend it;
+ *   4. if nothing carries a recognised prefix, fall back to the newest commit. There is no signal
+ *      to weigh, and the previous behaviour is at least predictable.
+ */
+function pickSubjectIndex(commits) {
+  if (!Array.isArray(commits) || commits.length === 0) return -1;
+  const candidates = commits.map((c, i) => ({ i, w: commitWeight(c), noise: isSyncNoise(c && c.subject) }))
+    .filter((c) => !c.noise);
+  const pool = candidates.length ? candidates : commits.map((c, i) => ({ i, w: commitWeight(c) }));
+  const best = Math.max(...pool.map((c) => c.w));
+  if (best === 0) return pool[0].i; // no prefixes anywhere → newest, as before
+  // pool is newest-first, so the LAST entry at the best weight is the oldest of the tied commits.
+  const tied = pool.filter((c) => c.w === best);
+  return tied[tied.length - 1].i;
+}
+
+/** Trailer lines from every commit, newest-first, de-duplicated case-insensitively. */
+function harvestTrailers(commits) {
+  const seen = new Set();
+  const out = [];
+  for (const c of commits || []) {
+    for (const line of String((c && c.body) || '').split('\n')) {
+      const t = line.trim();
+      if (!TRAILER_RE.test(t)) continue;
+      const key = t.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(t);
+    }
+  }
+  return out;
+}
+
+/**
+ * Full-line reference clauses ship itself composes ("Closes #17", "Refs #48", or several of either
+ * joined by ", "). Only a line matching this shape end-to-end is ever touched by
+ * `reconcileClosesRefsConflict` below — arbitrary prose that merely mentions an issue number (a
+ * sentence, not a trailer) is left alone, because rewriting inside a sentence is not a safe
+ * mechanical operation. The keyword casing mirrors the rest of this file: `[Cc]loses`, `[Rr]efs` —
+ * not a general case-insensitive match, and not the full GitHub closing-keyword vocabulary.
+ */
+const REF_LINE_RE = /^(?:(?:[Cc]loses|[Rr]efs) #\d+)(?:,\s*(?:[Cc]loses|[Rr]efs) #\d+)*$/;
+const REF_CLAUSE_RE = /([Cc]loses|[Rr]efs) #(\d+)/g;
+
+/**
+ * Drop an inherited `Refs #N` clause for any N ship is about to CLOSE (#58).
+ *
+ * The scenario: a session writes `Refs #53` into its own commit body while the issue is still open
+ * (an honest trailer at the time). By the time `ship` runs, #53 is one of the issues this branch
+ * CLOSES — but the pure layer only ever APPENDED a missing reference; it never looked at what the
+ * carried text already said. The result was two contradictory, immutable trailers on one commit:
+ * `Closes #53` (composed) and `Refs #53` (inherited), both true-looking, one of them stale.
+ *
+ * Only a self-contained reference LINE is touched (see `REF_LINE_RE`) — this is exactly the shape
+ * both ship's own composed line and the live #58 report take (a commit body ending in a bare
+ * `Refs #53`). A clause naming an issue NOT in `closeNums` survives untouched, including a `Refs #N`
+ * for a number that is genuinely only in `refs` — that is not a conflict, just a duplicate the
+ * caller's "already present" check already declines to repeat.
+ *
+ * Deliberately NOT symmetric: an inherited `Closes #N` for a number ship intends to `Refs` (a
+ * tracking issue, #48) is left alone HERE — this function only ever DROPS/REWRITES a self-contained
+ * `Refs`/`Closes` line, and rewriting a human-authored `Closes #N` into something else would produce
+ * a squash message that reads correct while GitHub still closes the memory issue on merge, because
+ * GitHub reads the carried text regardless of what this pure layer emits.
+ *
+ * That gap is real, but as of #149 it is closed a different way — not by rewriting here, but by
+ * `inheritedClosingKeywordConflicts` below, which SCANS (never edits) the fully composed message for
+ * any GitHub closing keyword against a `--refs` number, in prose or in a self-contained line alike,
+ * and lets the caller (`colab ship`) REFUSE before the push. Refusing is safe to be symmetric about
+ * in a way rewriting never was: the operator still authors the final text, ship just declines to
+ * commit one that contradicts its own `--refs` intent. See that function's doc comment for the rest.
+ *
+
+ * @param {string} message
+ * @param {string[]} closeNums   normalised (no leading `#`) issue numbers ship will CLOSE
+ * @param {Array} [conflicts]    when given, one `{num, from, to}` is pushed per clause dropped —
+ *                                the caller's hook for warning a human that a hand-written trailer
+ *                                was overruled
+ * @returns {string}
+ */
+function reconcileClosesRefsConflict(message, closeNums, conflicts) {
+  if (!closeNums || !closeNums.length) return message;
+  const closeSet = new Set(closeNums);
+  let changed = false;
+  const lines = String(message).split('\n').map((line) => {
+    const trimmed = line.trim();
+    if (!trimmed || !REF_LINE_RE.test(trimmed)) return line;
+    const kept = [];
+    let m;
+    REF_CLAUSE_RE.lastIndex = 0;
+    while ((m = REF_CLAUSE_RE.exec(trimmed))) {
+      const isRefs = /^[Rr]efs$/.test(m[1]);
+      const num = m[2];
+      if (isRefs && closeSet.has(num)) {
+        changed = true;
+        if (conflicts) conflicts.push({ num, from: 'Refs', to: 'Closes' });
+        continue; // drop this clause — ship's own Closes #N replaces it
+      }
+      kept.push(`${isRefs ? 'Refs' : 'Closes'} #${num}`);
+    }
+    return kept.length ? kept.join(', ') : null; // null marks the whole line for removal
+  });
+  if (!changed) return message;
+  return lines.filter((l) => l !== null).join('\n')
+    // a fully-dropped line can leave a dangling blank run — mid-message (two adjacent blank
+    // separators) or trailing (the dropped line was last). Collapse both; never touches content.
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/\n+$/, '');
+}
+
+/**
+ * Compose the full squash message.
+ *
+ * @param {Array<{subject:string, body?:string}>} commits  NEWEST-FIRST, merge commits already excluded
+ * @param {Array<number|string>} closes                    claimed issue numbers to CLOSE (`Closes #N`)
+ * @param {Array<number|string>} refs                       claimed issue numbers to REFERENCE but keep
+ *                                                          open (`Refs #N`) — long-lived memory/tracking
+ *                                                          issues the branch touched but did not complete
+ * @param {Array} [conflicts]                               when given, collects `{num, from, to}` for
+ *                                                          every inherited trailer `spliceCloses`
+ *                                                          overruled — see `reconcileClosesRefsConflict`
+ * @param {string[]} [extraTrailerLines]                    COMPOSED trailer lines this call itself
+ *                                                          wants appended (e.g. #105's `CI-Grant:`) —
+ *                                                          NOT inherited from a commit body, so they
+ *                                                          bypass harvestTrailers entirely and are
+ *                                                          glued on with the identical "onto an
+ *                                                          existing trailer block, never mid-value"
+ *                                                          rule. Never widens TRAILER_KEYS/
+ *                                                          harvestTrailers — that allowlist is for
+ *                                                          trailers INHERITED from carried commits,
+ *                                                          a different concern from one this call
+ *                                                          composes itself.
+ * @returns {string} the commit message
+ *
+ * Layout — subject, then body blocks in this order:
+ *   Closes #N, Refs #M       one paragraph: Closes for completed issues, Refs for tracking ones,
+ *                            each skipped if the assembled text already references it that way
+ *   - other subjects         every commit except the chosen one, newest-first, sync-noise dropped
+ *   <chosen commit's body>   verbatim
+ *   <harvested trailers>     only those not already present above
+ *   <extraTrailerLines>      only those not already present above, appended last
+ */
+function composeSquashMessage(commits, closes = [], refs = [], conflicts, extraTrailerLines = []) {
+  const list = Array.isArray(commits) ? commits.filter(Boolean) : [];
+  if (list.length === 0) return '';
+
+  const pick = pickSubjectIndex(list);
+  const chosen = list[pick];
+  const subject = String(chosen.subject || '').replace(/\s+$/, '');
+  const chosenBody = String(chosen.body || '').replace(/^\n+/, '').replace(/\s+$/, '');
+
+  const bullets = list
+    .filter((_, i) => i !== pick)
+    .map((c) => String(c.subject || '').trim())
+    .filter((s) => s && !isSyncNoise(s))
+    .map((s) => `- ${s}`);
+
+  // Assemble everything EXCEPT Closes first: the "already referenced?" test must run against what
+  // will actually ship. Testing the input instead (as the original did) can drop a `Closes #N` that
+  // lived in a commit body the squash does not carry — the issue then never auto-closes.
+  const tail = [];
+  if (bullets.length) tail.push(bullets.join('\n'));
+  if (chosenBody) tail.push(chosenBody);
+  let assembled = [subject, ...tail].join('\n\n');
+
+  // Case-insensitive, exactly as harvestTrailers de-duplicates: git tooling is inconsistent about
+  // `Co-authored-by` vs `Co-Authored-By`, and an exact-match test appends a second copy of a trailer
+  // the body already carries.
+  const present = new Set(assembled.split('\n').map((l) => l.trim().toLowerCase()));
+  const inheritedTrailers = harvestTrailers(list).filter((t) => !present.has(t.toLowerCase()));
+  if (inheritedTrailers.length) {
+    // Glue trailers onto an existing trailer block; otherwise start a new paragraph, so git still
+    // reads the last paragraph as trailers.
+    const lastLine = assembled.split('\n').pop().trim();
+    assembled += (TRAILER_RE.test(lastLine) ? '\n' : '\n\n') + inheritedTrailers.join('\n');
+  }
+
+  // #105: trailers THIS CALL composes itself (never inherited from a carried commit) — same
+  // glue-onto-a-trailer-block-never-mid-value rule, applied after the inherited ones so a
+  // composed trailer never lands ABOVE one a commit body actually wrote.
+  const composedTrailers = (Array.isArray(extraTrailerLines) ? extraTrailerLines : [])
+    .filter(Boolean)
+    .filter((t) => !present.has(String(t).trim().toLowerCase()) && !inheritedTrailers.some((i) => i.toLowerCase() === String(t).trim().toLowerCase()));
+  if (composedTrailers.length) {
+    const lastLine = assembled.split('\n').pop().trim();
+    assembled += (TRAILER_RE.test(lastLine) ? '\n' : '\n\n') + composedTrailers.join('\n');
+  }
+
+  return spliceCloses(assembled, closes, refs, conflicts);
+}
+
+/**
+ * Insert an issue-reference paragraph directly under the subject: `Closes #N` for issues the branch
+ * completes, `Refs #N` for long-lived memory/tracking issues it touched but must NOT close (#48).
+ * Each number is skipped if the message already references it that way.
+ *
+ * Never append: a message whose last paragraph is a trailer block (`Co-Authored-By:`,
+ * `Claude-Session:`) is the normal case, and gluing ` — Closes #N` onto the end corrupts the final
+ * trailer's VALUE. GitHub still auto-closes, so nothing fails loudly — but a `Claude-Session:` URL
+ * with text welded to it no longer resolves, and the commit is immutable once pushed.
+ *
+ * `refs` wins over `closes` for a number named in both — a tracking issue must never be closed,
+ * even if it was also passed on the close path. The two lists therefore ship disjoint.
+ *
+ * One thing this pure layer CANNOT do: if a carried commit body literally says `Closes #N` for a
+ * number in `refs`, GitHub will still close it on merge — adding `Refs #N` does not un-close it.
+ * `colab ship` detects that after the push (the ref issue reads CLOSED) and warns; here we simply
+ * do not emit a redundant `Refs #N` when a `Closes #N` for it already sits in the text.
+ *
+ * The mirror case — an inherited `Refs #N` for a number THIS call closes — is not a limitation the
+ * same way: nothing here needs GitHub to un-do anything, so it is reconciled up front by
+ * `reconcileClosesRefsConflict` (#58) rather than left for ship to warn about after the fact.
+ *
+ * Exported so every caller composes the same way. The composed path always did this correctly; the
+ * `--message` override concatenated instead, which is exactly the drift a shared helper prevents.
+ *
+ * @param {string} message
+ * @param {Array<number|string>} closes
+ * @param {Array<number|string>} refs
+ * @param {Array} [conflicts]  see `reconcileClosesRefsConflict` — passed straight through
+ */
+/**
+ * Every issue number `message` carries a closing directive for (`Closes #N` / `closes #N`), as
+ * strings, de-duplicated. THE single recogniser for "this text closes #N" — `spliceCloses` uses
+ * it to decide what still needs ADDING (#119), and `shipguard.closesCoverage` uses the identical
+ * function to decide what is MISSING from the final message. Sharing it is the point: a second,
+ * independently-written regex is exactly the drift that would let the composer and the guard
+ * disagree about a message they are both looking at.
+ *
+ * Deliberately narrow, matching `spliceCloses`'s own recognition rule: `Closes` only, not `Fixes` /
+ * `Resolves` / `Fixed` / an `owner/repo#N` form — those are GitHub's closing vocabulary, not this
+ * repo's, and widening it would change what `spliceCloses` treats as "already present" (out of
+ * scope for #119).
+ */
+function closedIssueNumbers(message) {
+  const out = new Set();
+  const re = /[Cc]loses #(\d+)\b/g;
+  let m;
+  while ((m = re.exec(String(message || '')))) out.add(m[1]);
+  return [...out];
+}
+
+/**
+ * The full GitHub closing-keyword vocabulary, deliberately WIDER than `closedIssueNumbers` above
+ * (which matches only this repo's own composed `Closes #N`, on purpose — see its doc comment).
+ * This one exists to answer a different question: not "did WE write a closing trailer", but "will
+ * GITHUB read this text as one", because GitHub honours the full keyword set inside ANY commit
+ * text on the default branch, not just a trailer line this tool composed.
+ */
+const CLOSING_KEYWORD_RE = /\b(close|closes|closed|fix|fixes|fixed|resolve|resolves|resolved)\s+#(\d+)\b/gi;
+
+/**
+ * #149: does `message` carry a GitHub closing keyword pointing at an issue `--refs` is keeping
+ * open?
+ *
+ * The gap this closes: `reconcileClosesRefsConflict` above only rewrites a self-contained
+ * `Closes #N` / `Refs #N` LINE — the shape ship's own composer produces. It has no opinion on a
+ * closing keyword sitting inside ordinary prose, because rewriting inside a sentence is not a safe
+ * mechanical operation (same reasoning as `REF_LINE_RE`'s doc comment). But GitHub does not care
+ * that the text is prose: `close #58` inside a carried commit SUBJECT ("docs: document X, close #58
+ * half 1's deferred note") auto-closes #58 on merge exactly as a trailer would, and #149 needed
+ * exactly this — a bullet built from a non-chosen commit's subject, which is squash body content by
+ * design (composeSquashMessage's doc comment above).
+ *
+ * Called BEFORE the push, on the exact string about to be committed — the composed message already
+ * exists at that point (spliceCloses / composeSquashMessage have both run), so this is knowable
+ * without any new git I/O. The caller decides what to do with a hit; this module stays pure and
+ * only reports.
+ *
+ * WHY BEFORE THE PUSH SPECIFICALLY, not just a clearer post-push message: the commit prose that
+ * triggers a wrong close is IMMUTABLE from the moment it lands on the default branch. GitHub's own
+ * close can be undone by a human reopening the tracker issue by hand, but the text that caused it
+ * cannot — it is now permanent in trunk's history, and every future read of it re-raises the same
+ * warning with nothing left to fix. A pre-push refusal and a post-push warning are not two
+ * severities of the same fix; only one of them is reachable while the mistake is still reversible.
+ *
+
+ * Deliberately checked against `refsIssues` only, not `closeIssues`: a closing keyword hitting a
+ * number ship already intends to CLOSE is not a conflict, it is redundant and harmless. It is only
+ * a conflict where the flag's entire purpose — keeping the issue open — is being undone by text the
+ * flag has no power to edit.
+ *
+ * @param {string} message
+ * @param {Array<number|string>} refsIssues   issue numbers this ship keeps OPEN (`--refs`)
+ * @returns {Array<{num:string, keyword:string}>}   one entry per DISTINCT (num, keyword) hit
+ */
+function inheritedClosingKeywordConflicts(message, refsIssues) {
+  const refSet = new Set((Array.isArray(refsIssues) ? refsIssues : []).map((n) => String(n).replace(/^#/, '')));
+  if (!refSet.size) return [];
+  const seen = new Set();
+  const out = [];
+  let m;
+  CLOSING_KEYWORD_RE.lastIndex = 0;
+  while ((m = CLOSING_KEYWORD_RE.exec(String(message || '')))) {
+    const num = m[2];
+    if (!refSet.has(num)) continue;
+    const keyword = m[1];
+    const key = `${num}:${keyword.toLowerCase()}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({ num, keyword });
+  }
+  return out;
+}
+
+function spliceCloses(message, closes = [], refs = [], conflicts) {
+  const norm = (arr) => (arr || []).map((n) => String(n).replace(/^#/, '')).filter(Boolean);
+  const refNums = norm(refs);
+  const refSet = new Set(refNums);
+  const closeNums = norm(closes).filter((n) => !refSet.has(n)); // refs wins — a tracking issue is never closed
+
+  // Drop any inherited `Refs #N` the branch wrote for an issue THIS call is about to close, before
+  // deciding what still needs adding — otherwise the stale trailer survives verbatim alongside the
+  // freshly composed `Closes #N` (#58).
+  const text = reconcileClosesRefsConflict(message, closeNums, conflicts);
+
+  const closedAlready = new Set(closedIssueNumbers(text));
+  const missingCloses = closeNums
+    .filter((n) => !closedAlready.has(n));
+  const missingRefs = refNums
+    // Skip a ref already referenced. Also skip one the message already CLOSES: this layer only adds
+    // text, so it cannot un-close it — ship warns after the push instead of us emitting both keywords.
+    .filter((n) => !new RegExp(`[Rr]efs #${n}\\b`).test(text) && !new RegExp(`[Cc]loses #${n}\\b`).test(text));
+
+  const parts = [
+    ...missingCloses.map((n) => `Closes #${n}`),
+    ...missingRefs.map((n) => `Refs #${n}`),
+  ];
+  if (!parts.length) return text;
+
+  const refLine = parts.join(', ');
+  const nl = text.indexOf('\n');
+  const head = nl === -1 ? text : text.slice(0, nl);
+  const rest = nl === -1 ? '' : text.slice(nl + 1).replace(/^\n+/, '');
+  return rest ? `${head}\n\n${refLine}\n\n${rest}` : `${head}\n\n${refLine}`;
+}
+
+module.exports = {
+  TYPE_WEIGHT, BREAKING_BONUS, TRAILER_RE,
+  isSyncNoise, parseSubject, commitWeight, unweightedCommits, pickSubjectIndex, harvestTrailers,
+  composeSquashMessage, spliceCloses, reconcileClosesRefsConflict, closedIssueNumbers,
+  inheritedClosingKeywordConflicts,
+};
