@@ -5,3 +5,5 @@ Om Dhamame (23070122155)
 Pushraj Naik (23070122169)
 
 ![Proof of Participation](screenshot_unstop.jpeg)
+
+![Proof of Participation](participation.jpeg)
