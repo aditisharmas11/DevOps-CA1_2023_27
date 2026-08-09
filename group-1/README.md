@@ -14,6 +14,7 @@
 | **23070122100** | Harsh Ledwani | TH1 |
 | **23070122113** | Shivam Kapure | TH1 |
 | **23070122114** | Kashyup Gaud | TH1 |
+| **23070122180** | Rishi Modi | TH1 |
 
 ---
 
