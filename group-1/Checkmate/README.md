@@ -4,7 +4,7 @@
 - **Class / Division**: DevOps TH1
 - **Target Open Source Project**: [bluewave-labs/Checkmate](https://github.com/bluewave-labs/Checkmate)
 - **Target Issue**: [#2679 - Maintenance Mode for Status Pages & Monitors](https://github.com/bluewave-labs/Checkmate/issues/2679)
-- **Checkmate PR**: [Link to your Checkmate PR]
+- **Checkmate PR**: [PR #3833](https://github.com/bluewave-labs/Checkmate/pull/3833)
 
 ### Group Members
 | Roll No / PRN | Name | Class / Batch |
