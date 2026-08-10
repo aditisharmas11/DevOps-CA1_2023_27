@@ -1,5 +1,13 @@
 # Excalidraw Issue #9503: Canvas Search Results Unstable
 
+## 👥 Team Members
+| PRN | Name |
+| :--- | :--- |
+| 132 | Anushka Desai |
+| 133 | Anum Agarwal |
+| 134 | Aryan Choudhary |
+| 135 | Aayush Joshi |
+
 ## Problem Statement
 When searching for text on the canvas, the results list reorders itself unexpectedly when one of the matched elements is dragged around. This happens because React does not have a stable key to render the list, or the array of search results is not ordered consistently on every render when coordinates change.
 
