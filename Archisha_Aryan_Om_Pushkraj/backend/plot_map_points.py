@@ -1,5 +1,10 @@
+import os
+
 import pandas as pd
 import matplotlib.pyplot as plt
+
+OUTPUT_DIR = './output_maps'
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 df = pd.read_csv('./datasets/preprocessed_data.csv')
 
@@ -7,7 +12,8 @@ crops = ["Grapes", "Papaya", "Rice", "Wheat", "Sugarcane"]
 agg_df = df.groupby(['lat', 'long'])[crops].sum().div(19).reset_index()
 
 crop_params = {
-    crops[n]: {'color': '#6FEDB9', 'size_mult': 400} for n in range(len(crops))
+    crop: {'color': '#6FEDB9', 'size_mult': 400}
+    for crop in crops
 }
 
 outline_xs = []
@@ -49,5 +55,7 @@ for crop in crops:
                labelspacing=1.5, loc='lower left')
 
     # plt.scatter([74.58676543279755], [17.1726928], c="black", s = 1)
+    plt.savefig(os.path.join(OUTPUT_DIR, f'{crop}.png'), dpi=220, bbox_inches='tight')
+    plt.close()
 
-plt.show()
+print(f'Plots saved to {OUTPUT_DIR}')

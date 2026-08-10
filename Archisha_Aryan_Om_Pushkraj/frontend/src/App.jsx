@@ -1,14 +1,16 @@
 import React from 'react'
 import './App.css'
-import Hero from '../src/components/hero.jsx';
-import Features from '../src/components/features.jsx';
-import About from '../src/components/about.jsx';
-import MapSection from '../src/components/maps.jsx';
-import Footer from '../src/components/footer.jsx';
+import Navbar from './components/navbar.jsx'
+import Hero from './components/hero.jsx'
+import Features from './components/features.jsx'
+import About from './components/about.jsx'
+import MapSection from './components/maps.jsx'
+import Footer from './components/footer.jsx'
 
 function App() {
   return (
     <>
+      <Navbar />
       <Hero />
       <About />
       <Features />
@@ -17,4 +19,5 @@ function App() {
     </>
   )
 }
+
 export default App

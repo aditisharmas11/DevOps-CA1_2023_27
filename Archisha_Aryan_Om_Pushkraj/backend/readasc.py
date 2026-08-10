@@ -38,11 +38,11 @@ class Asc:
         self.cellsize_x = 0.0498
         self.cellsize_y = 0.047
 
-        self.asc_name = fname.replace("_", " ")[:-4]
-        self.asc_name = " ".join([i.capitalize() for i in self.asc_name.split(" ")])
+        self.asc_name = os.path.splitext(os.path.basename(fname))[0].replace("_", " ")
+        self.asc_name = " ".join([i.capitalize() for i in self.asc_name.split()])
 
-        with open(fname, "r") as f:
-            d = [i.replace("\r", "").replace("\n", "") for i in f.readlines()]
+        with open(fname, 'r', encoding='utf-8') as f:
+            d = [line.rstrip('\r\n') for line in f]
 
         self.read_headers(d)
 
@@ -55,24 +55,28 @@ class Asc:
         yll = 0
         for row in d[:6]:
             parsed = parse_line(row)
-            if parsed[0] == "ncols":
-                self.ncols = int(parsed[1])
-            if parsed[0] == "nrows":
-                self.nrows = int(parsed[1])
-            if parsed[0] == "xllcorner":
-                self.xul = int(parsed[1]) * 200 - 179_000_000 + 67
-            if parsed[0] == "yllcorner":
-                yll = int(parsed[1]) * 200 - 103_000_000 + 40.63
-            if parsed[0] == "NODATA_value":
-                self.invalid_val = int(parsed[1])
-        self.yul = (yll - (self.nrows * self.cellsize_y))
+            if not parsed:
+                continue
+            key = parsed[0].lower()
+            value = parsed[1]
+            if key == 'ncols':
+                self.ncols = int(value)
+            elif key == 'nrows':
+                self.nrows = int(value)
+            elif key == 'xllcorner':
+                self.xul = int(value) * 200 - 179_000_000 + 67
+            elif key == 'yllcorner':
+                yll = int(value) * 200 - 103_000_000 + 40.63
+            elif key == 'nodata_value':
+                self.invalid_val = int(value)
+        self.yul = yll - (self.nrows * self.cellsize_y)
 
     def get_value_at_lat_long(self, lat, long):
         x_to_fetch, y_to_fetch = convert_lat_long_to_local_coordinates(lat, long)
-        x_idx = max(0, round(x_to_fetch * self.ncols))
-        y_idx = max(0, round(len(self.data) * y_to_fetch))
-        x_idx = min(self.ncols - 1, x_idx)
-        y_idx = min(len(self.data) - 1, y_idx)
+        x_idx = int(round(x_to_fetch * self.ncols))
+        y_idx = int(round(len(self.data) * y_to_fetch))
+        x_idx = np.clip(x_idx, 0, self.ncols - 1)
+        y_idx = np.clip(y_idx, 0, len(self.data) - 1)
 
         return self.data[y_idx][x_idx]
 
@@ -86,28 +90,33 @@ outline_ys = []
 
 def load_location_points():
     global location_xs, location_ys
-    with open("geocode_cache.json", "r") as f:
-        locations = json.loads(f.read())
-    location_xs = [locations[i][0] for i in locations]
-    location_ys = [locations[i][1] for i in locations]
+    cache_path = os.path.join('datasets', 'geocode_cache.json')
+    if not os.path.exists(cache_path):
+        return
+    with open(cache_path, 'r', encoding='utf-8') as f:
+        locations = json.load(f)
+    location_xs = [locations[k][0] for k in locations if locations[k][0] is not None]
+    location_ys = [locations[k][1] for k in locations if locations[k][1] is not None]
     del locations
 
 
 def load_india_outline():
     global outline_xs, outline_ys
-    with open("ne_10m_admin_0_countries_ind.csv", "r") as f:
+    outline_xs.clear()
+    outline_ys.clear()
+    csv_path = 'ne_10m_admin_0_countries_ind.csv'
+    if not os.path.exists(csv_path):
+        return
+
+    with open(csv_path, 'r', encoding='utf-8') as f:
         d = f.readlines()
 
     # these are (roughly) where india's coordinates are in the country data csv file.
-    dataIndices = [
-        (0.05, 0.11)
-    ]
+    data_indices = [(0.05, 0.11)]
 
-    for dat in dataIndices:
-        startPerc = dat[0]
-        endPerc = dat[1]
-        for i in d[1 + int(len(d) * startPerc): int(len(d) * endPerc) - 1]:
-            l = [float(k.strip()) for k in i.split(",")]
+    for start_perc, end_perc in data_indices:
+        for line in d[1 + int(len(d) * start_perc): int(len(d) * end_perc) - 1]:
+            l = [float(k.strip()) for k in line.split(',') if k.strip()]
             if l[0] < 65:  # longitude
                 continue
             outline_xs.append(l[0])

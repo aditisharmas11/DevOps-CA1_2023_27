@@ -1,3 +1,4 @@
+import os
 import time
 
 import tensorflow as tf
@@ -9,39 +10,47 @@ import matplotlib.image as mpimg
 import readasc
 
 from readasc import coordinate_dist
-import numpy as np
 
-model = tf.keras.models.load_model('crop_model.h5', custom_objects={
+model = tf.keras.models.load_model('./crop_model.h5', custom_objects={
     'top5_accuracy': lambda y_true, y_pred: tf.keras.metrics.top_k_categorical_accuracy(y_true, y_pred, k=5)
 })
-scaler = load('scaler.joblib')
+scaler = load('./scaler.joblib')
 preprocessed_df = pd.read_csv('./datasets/preprocessed_data.csv')
 CROP_LIST = preprocessed_df.columns[3:].tolist()
 
-
-ascs = ['organic_carbon', 'inorganic_carbon', 'clayey_soil',
-            'clayey-skeletal_soil', 'loamy_soil', 'sandy_soil']
-ascs = []
-ascs_n = {}
-for asc_name in ascs:
-    ascs_n[asc_name] = readasc.Asc(f"./datasets/{asc_name}.asc")
-
-ascs = ascs_n
-del ascs_n
+asc_paths = [
+    './datasets/organic_carbon.asc',
+    './datasets/inorganic_carbon.asc',
+    './datasets/clayey_soil.asc',
+    './datasets/clayey-skeletal_soil.asc',
+    './datasets/loamy_soil.asc',
+    './datasets/sandy_soil.asc'
+]
+ascs = {
+    os.path.splitext(os.path.basename(path))[0]: readasc.Asc(path)
+    for path in asc_paths if os.path.exists(path)
+}
 
 def predict_top_crops(latitude, longitude, year):
-    is_batch = False
-    try:
-        if hasattr(latitude, "__len__") and not isinstance(latitude, str) and len(latitude) > 1:
-            is_batch = True
-    except Exception:
-        is_batch = False
+    latitude = np.atleast_1d(latitude)
+    longitude = np.atleast_1d(longitude)
+    year = np.atleast_1d(year)
 
-    if is_batch:
-        input_features = np.column_stack((latitude, longitude))
-    else:
-        input_features = np.array([[latitude, longitude]])
+    if latitude.shape != longitude.shape:
+        raise ValueError('Latitude and longitude must have the same shape')
+    if year.size not in (1, latitude.size):
+        raise ValueError('Year must be a scalar or match the number of coordinates')
 
+    if year.size == 1:
+        year = np.full(latitude.shape, year.item(), dtype=float)
+
+    feature_rows = []
+    asc_layers = list(ascs.values())
+    for lat, long, yr in zip(latitude, longitude, year):
+        soil_values = [asc.get_value_at_lat_long(lat, long) for asc in asc_layers]
+        feature_rows.append([lat, long, yr] + soil_values)
+
+    input_features = np.asarray(feature_rows, dtype=float)
     scaled_input = scaler.transform(input_features)
     predictions = model.predict(scaled_input, verbose=0)
 

@@ -9,48 +9,44 @@ CACHE_FILE = './datasets/geocode_cache.json'
 DATA_FILE = './datasets/crop_data.csv'
 OUTPUT_FILE = './datasets/preprocessed_data.csv'
 
+def load_cache():
+    if os.path.exists(CACHE_FILE):
+        with open(CACHE_FILE, 'r') as f:
+            return json.load(f)
+    return {}
+
 def save_cache(cache):
     with open(CACHE_FILE, 'w') as f:
         json.dump(cache, f)
 
-def geocode_location(state, district, cache):
+def geocode_location(state, district, cache, geolocator):
     key = f"{state}|{district}"
     if key in cache:
         return cache[key]
-    
-    geolocator = Nominatim(user_agent="crop_prediction")
-    location = None
-    
+
     try:
         location = geolocator.geocode(f"{district}, {state}, India")
         if not location:
             location = geolocator.geocode(f"{state}, India")
-    except:
-        pass
-    
-    if location:
-        cache[key] = (location.latitude, location.longitude)
-    else:
-        cache[key] = (None, None)
-    
-    save_cache(cache)
-    
+    except Exception:
+        location = None
+
+    cache[key] = (location.latitude, location.longitude) if location else (None, None)
     return cache[key]
 
 def main():
     df = pd.read_csv(DATA_FILE)
-    
-    if os.path.exists(CACHE_FILE):
-        with open(CACHE_FILE, 'r') as f:
-            cache = json.load(f)
-    else:
-        cache = {}
-    
-    df['lat'], df['long'] = zip(*df.apply(
-        lambda row: geocode_location(row['State_Name'], row['District_Name'], cache),
-        axis=1
-    ))
-    
+
+    cache = load_cache()
+    geolocator = Nominatim(user_agent="crop_prediction")
+
+    locations = [
+        geocode_location(state, district, cache, geolocator)
+        for state, district in zip(df['State_Name'], df['District_Name'])
+    ]
+    df[['lat', 'long']] = pd.DataFrame(locations, index=df.index)
+    save_cache(cache)
+
     df = df.dropna(subset=['lat', 'long'])
     
     df = df[(df['Area'] > 0) & (df['Production'] > 0)]
@@ -99,9 +95,10 @@ def main():
         fill_value=0
     ).reset_index()
 
-    ascs = ['organic_carbon', 'inorganic_carbon', 'clayey_soil',
-            'clayey-skeletal_soil', 'loamy_soil', 'sandy_soil']
-    ascs = []
+    ascs = [
+        'organic_carbon', 'inorganic_carbon', 'clayey_soil',
+        'clayey-skeletal_soil', 'loamy_soil', 'sandy_soil'
+    ]
 
     for asc_name in ascs:
         asc = readasc.Asc(f"./datasets/{asc_name}.asc")
