@@ -39,7 +39,7 @@ The objective of the CA task was to identify an existing:
 - Linux Foundation challenge
 - Bug / issue requiring a solution
 
-We selected the Hackathon challange
+We selected the Hackathon challange.
 The selected challenge was then recorded by the group in the provided class spreadsheet.
 
 
