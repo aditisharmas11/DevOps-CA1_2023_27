@@ -9,43 +9,40 @@ app = Flask(__name__)
 def get_location():
     latitude = request.args.get('latitude')
     longitude = request.args.get('longitude')
-    district = request.args.get('district')
-    state = request.args.get('state')
-    language = request.args.get('language')
+    district = request.args.get('district', 'N/A')
+    state = request.args.get('state', 'N/A')
+    language = request.args.get('language', 'en')
+    year = request.args.get('year', '2025')
 
-    if not district:
-        district = "N/A"
-    if not state:
-        state = "N/A"
+    if not latitude or not longitude:
+        return jsonify({'error': 'Latitude and longitude are required'}), 400
 
-    if not latitude or not longitude or not district or not state or not language:
-        return jsonify({'error': '!KEY'}), 400
     try:
         latitude = float(latitude)
         longitude = float(longitude)
+        year = int(year)
     except ValueError:
-        return jsonify({'error': 'Latitude and longitude must be numeric!'}), 400
+        return jsonify({'error': 'Latitude, longitude, and year must be numeric!'}), 400
 
-    top_crops = predict_top_crops(latitude, longitude, 2025)
-    print(top_crops)
+    predictions = predict_top_crops(latitude, longitude, year)
+    if not predictions:
+        return jsonify({'error': 'No crop predictions available'}), 500
 
-    # init llm context using builder
+    top_crops = predictions[0] if isinstance(predictions[0], list) else predictions
+    if not top_crops:
+        return jsonify({'error': 'No crop predictions available'}), 500
+
     llm_ctx = LLMContext()
     llm_ctx.lat_init(latitude)
     llm_ctx.long_init(longitude)
     llm_ctx.district_init(district)
     llm_ctx.state_init(state)
     llm_ctx.language_init(language)
-    llm_ctx.c1n_init(top_crops[0][0])
-    llm_ctx.c1p_init(round(top_crops[0][1] * 100))
-    llm_ctx.c2n_init(top_crops[1][0])
-    llm_ctx.c2p_init(round(top_crops[1][1] * 100))
-    llm_ctx.c3n_init(top_crops[2][0])
-    llm_ctx.c3p_init(round(top_crops[2][1] * 100))
-    llm_ctx.c4n_init(top_crops[3][0])
-    llm_ctx.c4p_init(round(top_crops[3][1] * 100))
-    llm_ctx.c5n_init(top_crops[4][0])
-    llm_ctx.c5p_init(round(top_crops[4][1] * 100))
+
+    for idx, (name, ratio) in enumerate(top_crops[:5], start=1):
+        getattr(llm_ctx, f'c{idx}n_init')(name)
+        getattr(llm_ctx, f'c{idx}p_init')(round(ratio * 100))
+
     llm_ctx.build()
 
     ret = {
@@ -57,4 +54,4 @@ def get_location():
 
     return ret
 
-app.run(debug=True)
+app.run(host='0.0.0.0', debug=True)

@@ -10,25 +10,22 @@ from imblearn.over_sampling import ADASYN
 from joblib import dump
 
 DATA_FILE = './datasets/preprocessed_data.csv'
-MODEL_FILE = 'crop_model.h5'
+MODEL_FILE = './crop_model.h5'
+SCALER_FILE = './scaler.joblib'
 
 def main():
     df = pd.read_csv(DATA_FILE)
 
     seed = 2
-    # np.random.seed(seed)
-    # tf.random.set_seed(seed)
-    # tf.keras.utils.set_random_seed(seed)
-    # os.environ['TF_DETERMINISTIC_OPS'] = '1'
-    # os.environ['TF_CUDNN_DETERMINISTIC'] = '1'
-    #
-    # tf.config.threading.set_inter_op_parallelism_threads(1)
-    # tf.config.threading.set_intra_op_parallelism_threads(1)
+    np.random.seed(seed)
+    tf.random.set_seed(seed)
+    tf.keras.utils.set_random_seed(seed)
 
-    train_params = ['lat', 'long', 'Crop_Year',
-              'organic_carbon', 'inorganic_carbon', 'clayey_soil',
-              'clayey-skeletal_soil', 'loamy_soil', 'sandy_soil']
-    train_params = ['lat', 'long']
+    train_params = [
+        'lat', 'long', 'Crop_Year',
+        'organic_carbon', 'inorganic_carbon', 'clayey_soil',
+        'clayey-skeletal_soil', 'loamy_soil', 'sandy_soil'
+    ]
 
     df_subset = df[df["Papaya"] > 0]
     for i in range(0, 2):
@@ -49,7 +46,7 @@ def main():
     scaler = StandardScaler()
     X_train = scaler.fit_transform(X_train)
     X_test = scaler.transform(X_test)
-    dump(scaler, 'scaler.joblib')
+    dump(scaler, SCALER_FILE)
 
     model = tf.keras.Sequential([
         tf.keras.layers.Dense(120, activation='relu', input_shape=(len(train_params),)),

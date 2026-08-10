@@ -1,3 +1,4 @@
+import os
 from groq import Groq
 
 sysprompt = """You are an expert crop analyst, and you specialize in suggesting what crops should be grown where, particularly in India. 
@@ -137,6 +138,8 @@ class LLMContext:
         return chat_completion
 
 
-client = Groq(
-    api_key="PUT_API_KEY",
-)
+api_key = os.getenv('GROQ_API_KEY')
+if not api_key:
+    raise RuntimeError('GROQ_API_KEY environment variable is required to use the LLM client')
+
+client = Groq(api_key=api_key)
