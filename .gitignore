@@ -1,0 +1,21 @@
+# Chroma DB
+chroma_db/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

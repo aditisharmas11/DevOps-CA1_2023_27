@@ -1,0 +1,2871 @@
+[
+  {
+    "id": "scheme_0",
+    "title": "Annal Gandhi Memorial Award",
+    "description": "Award for Adi Dravidar Hindu students securing 1st rank in 12th Public Examinations.",
+    "eligibility": "Hindu AD students who secured first rank in 12th Std. Public Exams in their district",
+    "benefits": "Recognition award; no income limit",
+    "documents": "Community Certificate",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_1",
+    "title": "Adi Dravidar & Tribal Welfare Scholarship (Free Education)",
+    "description": "Free education up to 12th standard for eligible students.",
+    "eligibility": "Adi Dravidar/Tribal/Adi Dravidar Converted to Christianity students; no income limit",
+    "benefits": "Free education up to 12th Std.",
+    "documents": "Community Certificate",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,sc,st,minority"
+  },
+  {
+    "id": "scheme_2",
+    "title": "Post-Matric Scholarship Scheme",
+    "description": "Financial assistance for students from class XI to XII to promote higher education among backward communities.",
+    "eligibility": "Parents' income ≤ Rs. 1,00,000; student from Most Backward Classes and Denotified Communities",
+    "benefits": "Tuition fee of Rs. 500 (Rs. 50 per month for 10 months) and full examination fee coverage for 12th Std.",
+    "documents": "Community Certificate",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 100000,
+    "occupation": "student",
+    "other": "",
+    "category": "general,st,obc"
+  },
+  {
+    "id": "scheme_3",
+    "title": "Adi Dravidar & Tribal Welfare Scholarship (Public Exams)",
+    "description": "Covers examination fees for 10th and 12th Std. students in Adi Dravidar/Tribal communities.",
+    "eligibility": "Adi Dravidar/Tribal/Adi Dravidar Converted to Christianity students; no income limit",
+    "benefits": "Public examination fee reimbursed directly to the Directorate of Government Examinations",
+    "documents": "Community Certificate",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,sc,st,minority"
+  },
+  {
+    "id": "scheme_4",
+    "title": "Pragathi Scholarship for Girl Students (Technical Diploma)",
+    "description": "Scholarship for girl students pursuing technical diplomas, covering tuition, examination, and other incidental expenses.",
+    "eligibility": "Female students from families with income < Rs. 8 Lakh; maximum duration varies depending on entry year",
+    "benefits": "Up to Rs. 50,000 per annum for three years for Diploma students (first year) and two years for lateral entry",
+    "documents": "-",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 800000,
+    "occupation": "student",
+    "other": "women",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_5",
+    "title": "Pre-Matric Scholarship Scheme for financially challenged students",
+    "description": "Aimed at promoting school education among financially challenged students.",
+    "eligibility": "Parents' income ≤ Rs. 1,00,000; no graduate in the family; students in 6th to 10th Std.",
+    "benefits": "Tuition fee: Rs. 200 for 6th-8th Std. and Rs. 250 for 9th-10th Std., paid monthly for 10 months",
+    "documents": "Income Certificate",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 100000,
+    "occupation": "student",
+    "other": "",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_6",
+    "title": "Free Education Scholarship for Professional Courses",
+    "description": "Financial assistance for students pursuing professional courses.",
+    "eligibility": "Parents' income ≤ Rs. 1,00,000; no graduate in the family; Backward Classes, Most Backward Classes, and Denotified Communities students",
+    "benefits": "Tuition fee, special fee, and other non-refundable fees paid as prescribed, with full examination fee coverage",
+    "documents": "Community Certificate",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 100000,
+    "occupation": "student",
+    "other": "",
+    "category": "general,st,obc"
+  },
+  {
+    "id": "scheme_7",
+    "title": "Awards to Bright Students",
+    "description": "Financial reward for students excelling in 10th Public Examinations.",
+    "eligibility": "First two boys and girls in each district from Adi Dravidar, Tribal, or Adi Dravidar Converted to Christianity communities",
+    "benefits": "Rs. 800 in the first year and Rs. 960 for the next five years",
+    "documents": "Community Certificate",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "women",
+    "category": "general,sc,st,minority"
+  },
+  {
+    "id": "scheme_8",
+    "title": "Post-Matric Scholarship for Students with Disabilities",
+    "description": "Assistance including scholarship, book grant, and escort/reader allowance for disabled students continuing education.",
+    "eligibility": "Students progressing within the same stage of education",
+    "benefits": "Varies by course and disability",
+    "documents": "Disability Certificate",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_9",
+    "title": "Begum Hazrat Mahal National Scholarship for Minority Girls",
+    "description": "Financial aid for minority community girls for educational expenses, including fees, books, and lodging.",
+    "eligibility": "Minority community girls (Muslims, Christians, Sikhs, Buddhists, Jains, Parsis) in class IX to XII; family income ≤ Rs. 2 lakh",
+    "benefits": "Rs. 5,000 each for Class IX & X, Rs. 6,000 each for Class XI & XII",
+    "documents": "Previous class mark sheet (min. 50%), school verification form",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 200000,
+    "occupation": "general",
+    "other": "women",
+    "category": "general,st,minority"
+  },
+  {
+    "id": "scheme_10",
+    "title": "Saksham Scholarship for Specially-Abled Students (Degree)",
+    "description": "Support for differently-abled students in technical degree programs to pursue further education.",
+    "eligibility": "Differently-abled students with ≥ 40% disability",
+    "benefits": "Tuition fee of Rs. 30,000, Rs. 2,000 per month for 10 months as incidental charges, and Rs. 30,000 for books/equipment/software",
+    "documents": "Mark Sheet of standard Xth/XIIth, Aadhar Card, Disability Certificate",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "disabled",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_11",
+    "title": "Scheme for Meritorious Students (Higher Secondary)",
+    "description": "Financial aid for high-scoring students from government schools to pursue higher education in top private schools.",
+    "eligibility": "Top 10 students from government high schools in each district with parental income ≤ Rs. 1 lakh",
+    "benefits": "Financial assistance to study in selected private schools",
+    "documents": "Community Certificate",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 100000,
+    "occupation": "student",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_12",
+    "title": "Free Laptop Scheme",
+    "description": "Government program providing laptops to students with high marks to promote digital literacy and skill development.",
+    "eligibility": "Students who passed 10th or 12th Std. with ≥ 75% marks",
+    "benefits": "Free laptop",
+    "documents": "10th and 12th Mark Sheet, Residential Proof, Aadhar Card",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_13",
+    "title": "Top Class Education Scheme",
+    "description": "Financial aid for SC students pursuing post-secondary education in reputable institutions.",
+    "eligibility": "SC students with family income ≤ Rs. 8 lakh",
+    "benefits": "Full tuition fee, living expenses, books, stationery, and laptops",
+    "documents": "Income Certificate, Aadhar Number, Caste Certificate, Parents' Bank Details",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 800000,
+    "occupation": "student",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_14",
+    "title": "National Overseas Scholarship for Scheduled Castes",
+    "description": "Scholarship for low-income SC students to pursue Master's or Ph.D. programs abroad.",
+    "eligibility": "SC students with family income less than Rs. 8 lakh; minimum 60% marks in qualifying exam",
+    "benefits": "Up to 100 awards annually; 30% reserved for women",
+    "documents": "Income Certificate, Passport",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 800000,
+    "occupation": "student",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_15",
+    "title": "Merit Cum Means Scholarship (Technical Courses for Minorities)",
+    "description": "Financial aid for minority students pursuing professional/technical courses.",
+    "eligibility": "Minority students (Muslims, Christians, Sikhs, Buddhists, Jains, Parsis) in class IX-XII with family income ≤ Rs. 2 lakh",
+    "benefits": "Rs. 5,000 for Class IX & X, Rs. 6,000 for Class XI & XII",
+    "documents": "School verification form, previous class mark sheet (min. 50%)",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 200000,
+    "occupation": "student",
+    "other": "",
+    "category": "general,st,minority"
+  },
+  {
+    "id": "scheme_16",
+    "title": "Free Education Scheme (Degree)",
+    "description": "Free education for Backward, Most Backward, and Denotified students in 3-year UG courses in government and aided arts/science colleges.",
+    "eligibility": "Backward, Most Backward, Denotified students in 3-year degree programs",
+    "benefits": "Special fee, other non-refundable fees, and full examination fees",
+    "documents": "Community Certificate",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,st,obc"
+  },
+  {
+    "id": "scheme_17",
+    "title": "National Merit Scholarship Scheme",
+    "description": "Scholarships to meritorious students in class 12th with excellent academic records.",
+    "eligibility": "Students from Class 12th with high marks in exams",
+    "benefits": "Financial aid for higher studies",
+    "documents": "Class 12th Marksheet, Aadhar Card",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_18",
+    "title": "AICTE-SWANATH Scholarship (Technical Diploma)",
+    "description": "Support for orphaned students, COVID-19-affected students, and children of martyred armed forces/paramilitary personnel in technical diploma courses.",
+    "eligibility": "First- or second-year students in AICTE-approved diploma courses",
+    "benefits": "Rs. 50,000 annually towards college fees, computers, books, and other essentials",
+    "documents": "Family income certificate, Disability certificate, Caste Certificate, Aadhar Number",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_19",
+    "title": "Book Bank",
+    "description": "Book lending scheme for SC/ST students to reduce dropout/failure rates due to lack of textbooks.",
+    "eligibility": "SC/ST students receiving the Government of India Scholarship",
+    "benefits": "Access to course-specific books in the library for Medical, Engineering, Law, MBA, Veterinary, Agriculture, and Polytechnic courses",
+    "documents": "Community Certificate",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_20",
+    "title": "Free Education Scholarship (Polytechnic)",
+    "description": "Free education for eligible backward classes in polytechnic courses.",
+    "eligibility": "Parents' income ≤ Rs. 1,00,000; no diploma/graduate in family; Backward, Most Backward, and Denotified Communities students",
+    "benefits": "Tuition fee, special fee, and non-refundable fees as per government guidelines",
+    "documents": "Community Certificate",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 100000,
+    "occupation": "student",
+    "other": "",
+    "category": "general,st,obc"
+  },
+  {
+    "id": "scheme_21",
+    "title": "Assistance for Education",
+    "description": "Financial aid for meritorious students with family income ≤ Rs. 4.5 lakh per annum.",
+    "eligibility": "Children of Folk Artistes, maximum of 2 per family starting from Class X",
+    "benefits": "Financial support for day-to-day expenses in higher studies, including hostel fees based on course",
+    "documents": "Community Certificate",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_22",
+    "title": "Adi Dravidar and Tribal Welfare Department -Hostels - Special Guides",
+    "description": "Support for boys/girls studying up to XII Standard",
+    "eligibility": "All Boys/Girls Boarders studying up to XII Standard",
+    "benefits": "Hostel Facilities",
+    "documents": "N/A",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "women",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_23",
+    "title": "Adi Dravidar and Tribal Welfare Department -Incentive / Award of Prizes - District Level",
+    "description": "Awards for the highest marks in Plus 2 and 10th Std. examinations for students from Adi Dravidar/Tribal communities.",
+    "eligibility": "One Boy and One Girl each from Adi Dravidar/Tribal / Adi Dravidar Converted to Christianity who have secured highest marks",
+    "benefits": "Incentives of Rs. 3000/- (Plus 2), Rs. 1000/- (10th Std First Prize), Rs. 500/- (Second Prize), Rs. 300/- (Third Prize)",
+    "documents": "N/A",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "women",
+    "category": "general,sc,st,minority"
+  },
+  {
+    "id": "scheme_24",
+    "title": "Adi Dravidar and Tribal Welfare Department - Stationary - Text Books",
+    "description": "Free textbooks for students studying in Adi Dravidar and Tribal welfare schools.",
+    "eligibility": "All students studying in 1st standard to 12th standard in Adi Dravidar and Tribal welfare schools",
+    "benefits": "Free textbooks for students",
+    "documents": "N/A",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_25",
+    "title": "Admission of Adi Dravidar / Tribal students in Plus One at Reputed Schools",
+    "description": "Admission for outstanding students to reputed private schools for higher secondary education.",
+    "eligibility": "Students who secure the highest marks in X standard from Adi Dravidar/Tribal Welfare schools",
+    "benefits": "Financial support for admission to reputed private schools",
+    "documents": "Income less than Rs. 1,00,000",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_26",
+    "title": "Chief Minister Merit Award",
+    "description": "Award for students from Adi Dravidar, Tribal, and Adi Dravidar converted to Christianity communities.",
+    "eligibility": "Top 1000 boys and 1000 girls from the Adi Dravidar, Tribal, and Adi Dravidar Converted to Christianity communities",
+    "benefits": "Rs. 3000 per annum for 5 years, provided they continue education",
+    "documents": "N/A",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "women",
+    "category": "general,sc,st,minority"
+  },
+  {
+    "id": "scheme_27",
+    "title": "Chief Minister’s Merit Award",
+    "description": "Merit-based scholarship for students who secure top marks in the 12th Std. Public Examination and continue higher studies.",
+    "eligibility": "First 1000 boys and girls who pass the 12th Std. Public Examination and continue their studies",
+    "benefits": "Rs. 1500 per annum for 5 years",
+    "documents": "N/A",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "women",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_28",
+    "title": "DISTRICT LEVEL PRIZES PUBLIC EXAMINATION 10th and 12th Std.",
+    "description": "Prizes for the best-performing students in 10th and 12th Std. Public Examinations.",
+    "eligibility": "Top students from Backward, Most Backward, and Denotified Communities",
+    "benefits": "First Prize: Rs. 6000, Second Prize: Rs. 4000, Third Prize: Rs. 2000",
+    "documents": "N/A",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,st,obc"
+  },
+  {
+    "id": "scheme_29",
+    "title": "Free Education Scheme",
+    "description": "Free education for 3-year U.G. degree courses for students from Backward, Most Backward, and Denotified Communities.",
+    "eligibility": "Students in 3-year U.G. degree courses in Government and Government Aided Arts and Science Colleges",
+    "benefits": "Tuition fees, special fees, and other non-refundable fees paid as prescribed by the government",
+    "documents": "N/A",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_30",
+    "title": "Free Education Scholarship for Polytechnic Courses",
+    "description": "Free education for students from Backward, Most Backward, and Denotified Communities in 3-year Diploma courses.",
+    "eligibility": "Students from Backward, Most Backward, and Denotified Communities in Government and Government Aided Polytechnics",
+    "benefits": "Tuition fees, special fees, and other non-refundable fees paid as prescribed by the government",
+    "documents": "N/A",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,st,obc"
+  },
+  {
+    "id": "scheme_31",
+    "title": "Postmatric Scholarship",
+    "description": "Scholarship for students studying in 11th and 12th Standard in English Medium.",
+    "eligibility": "Students from Backward, Most Backward, and Denotified Communities with family income less than Rs. 1,00,000",
+    "benefits": "Scholarship for tuition, examination, and other prescribed fees",
+    "documents": "N/A",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 100000,
+    "occupation": "student",
+    "other": "",
+    "category": "general,st,obc"
+  },
+  {
+    "id": "scheme_32",
+    "title": "Scheme for Meritorious Students to Pursue Higher Secondary Education",
+    "description": "Financial assistance for students who top their 10th Public examination to pursue higher secondary education in top private schools in Tamil Nadu.",
+    "eligibility": "Top students from Government High Schools in 10th Std. Public Examinations",
+    "benefits": "Financial support for admission to reputed private schools",
+    "documents": "N/A",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_33",
+    "title": "Adi Dravidar and Tribal Welfare Department - Incentive / Award of Prizes",
+    "description": "Incentive and award of prizes for students from Adi Dravidar/Tribal/Adi Dravidar Converted to Christianity communities based on their performance in Plus 2 and 10th Std. examinations.",
+    "eligibility": "One student each from Adi Dravidar/Tribal/Adi Dravidar Converted to Christianity for each subject in Plus 2 and 10th Std. examinations",
+    "benefits": "Rs. 2000/- for each subject in Plus 2 Examination, Rs. 1000/- for 10th Std. Examination",
+    "documents": "N/A",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,sc,st,minority"
+  },
+  {
+    "id": "scheme_34",
+    "title": "ICMR- Post Doctoral Fellowship (ICMR-PDF)",
+    "description": "ICMR-PDF Scheme is instituted to foster high-quality research opportunities for promising fresh Ph.D./MD/MS holders in basic science, communicable and non-communicable diseases, and reproductive health including nutrition at ICMR Institutes/Centers. The fellowship aims to support fundamental research in cutting-edge areas of science and other priority fields identified by ICMR.",
+    "eligibility": "Indian nationals only; Fresh PhDs/MD/MS within three years of completing their degree (awarded) as on the last date of the application; Proposed research work should continue the candidate's Ph.D. or MD/MS research work; Maximum age limit is 32 years, relaxable up to 5 years for SC/ST/OBC/PH and women candidates; Deserving candidates may receive an additional 3 years' relaxation based on prior work, publications, and awards.",
+    "benefits": "₹65,000 per month plus HRA as per government rules and NPA as admissible; Contingency grant of ₹3,00,000 per annum (25% can be used for national travel related to research work); Accommodation may be provided at ICMR Institutes/Centers, but HRA will not be paid in such cases; Medical benefits and leave as per ICMR rules for JRF/Research Associates.",
+    "documents": "Passport-size Photograph; Attested copy of School Leaving/High School Certificate for date of birth; Attested copies of Mark Sheets/Grade Cards & Degrees; Caste certificate, if applicable; Reprints of publications; One-page summary of Ph.D. thesis; Attested copies of Letter(s) of Acceptance for paper(s) accepted for publication; Detailed research proposal; Testimonials from two referees (one should be the Ph.D. Guide); Plagiarism Check Report verified by ICMR-RIO.",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,sc,st,obc"
+  },
+  {
+    "id": "scheme_35",
+    "title": "Dr. Ambedakar Centrally Sponsored Scheme of Post-Matric Scholarships for the Economically Backward Class (EBC) Students",
+    "description": "The objective of the scheme is to provide financial assistance to Economically Backward Class (EBC) students studying at the post-matriculation or post-secondary stage in India. Scholarships are awarded by the Government of the State/Union Territory to which the applicant belongs. The scheme is designed to enable students to complete their education.",
+    "eligibility": [
+      "Indian nationals belonging to the General Category (other than Schedule Caste, Schedule Tribe, and Other Backward Classes)",
+      "Students pursuing recognized post-matriculation or post-secondary courses in Government institutions in India",
+      "Students pursuing post-graduate courses in medicine (provided they are not allowed to practice during the course)",
+      "Income from all sources of the student's parents/guardians should not exceed ₹1,00,000 per annum",
+      "Students must not be studying in commercial pilot license or aviation-related courses",
+      "Only two boys of the same parents/guardians are eligible to receive the scholarship, though this restriction does not apply to girls"
+    ],
+    "benefits": {
+      "Group A": {
+        "Description": "Degree and Post Graduate level courses including M.Phil., PhD, Post Doctoral research, Engineering, Technology, Medicine, Management, and similar fields.",
+        "Maintenance Allowance": {
+          "Hostellers": 750,
+          "Day Scholars": 350
+        }
+      },
+      "Group B": {
+        "Description": "Graduate/Post Graduate courses like Pharmacy, Nursing, Mass Communication, Hotel Management, etc.",
+        "Maintenance Allowance": {
+          "Hostellers": 510,
+          "Day Scholars": 335
+        }
+      },
+      "Group C": {
+        "Description": "General courses leading to a graduate degree like BA, B.Sc., B.Com.",
+        "Maintenance Allowance": {
+          "Hostellers": 400,
+          "Day Scholars": 210
+        }
+      },
+      "Group D": {
+        "Description": "Non-degree courses like ITI courses, senior secondary certificates, vocational courses, and others.",
+        "Maintenance Allowance": {
+          "Hostellers": 260,
+          "Day Scholars": 160
+        }
+      },
+      "Additional Benefits": {
+        "Reader Charges": {
+          "Group A & B": 175,
+          "Group C": 130,
+          "Group D": 90
+        },
+        "Study Tours": "Up to ₹900 per annum for professional and technical courses (based on actual expenditure).",
+        "Thesis Typing/Printing": "Up to ₹1,000 for research scholars (based on recommendation).",
+        "Fees": "Scholarship covers compulsory fees such as enrollment, tuition, library, medical, etc., but excludes refundable deposits."
+      }
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 100000,
+    "occupation": "student",
+    "other": "women",
+    "category": "general,sc,st,obc"
+  },
+  {
+    "id": "scheme_36",
+    "title": "AICTE - Research Promotion Scheme (RPS)",
+    "description": "The scheme 'AICTE - Research Promotion Scheme (RPS)' was introduced by the All India Council for Technical Education (AICTE), Department of Higher Education (DoHE) to promote research in identified thrust areas of technical education. AICTE-approved Technical Institutions/University Departments with relevant PG programs and full-time regular faculty with research experience and publications are eligible to apply.",
+    "eligibility": [
+      "AICTE-approved Technical Institutions/University Departments with relevant PG programs.",
+      "Full-time regular faculty with research experience and publications.",
+      "Preliminary research facilities should be available in the institute.",
+      "One proposal from one PI (Principal Investigator) will be sanctioned at any point in time within the duration of the project.",
+      "Maximum number of proposals acceptable per institute (including those sanctioned earlier but not completed) shall be five for Govt. institutes and three for Pvt. institutes. However, the maximum number of proposals acceptable to be approved per institute shall be two for both Govt. and Pvt. institutes."
+    ],
+    "benefits": {
+      "Duration of the Project": "Three years from the date of receipt of funds in the institute’s account.",
+      "Limit of Funding": [
+        "Maximum limit of funding is ₹ 25,00,000.",
+        "Non-Recurring 75% and Recurring 25% of the total sanctioned grant."
+      ],
+      "Disbursement of the Funds": [
+        "100% Non-recurring and 50% of the recurring grant of the total sanctioned amount.",
+        "50% of the total sanctioned recurring grant only after submission of the Audited Utilization Certificate and all requisite documents."
+      ],
+      "Notes": [
+        "The grant will be utilized strictly for the purpose as specified in the sanction letter. Re-appropriation of funds from Recurring to Non-Recurring is allowed but not vice versa.",
+        "Equipment(s)/item(s) purchased from out of non-recurring should be as per the specifications sanctioned by AICTE.",
+        "Recurring grant can be utilized for items sanctioned by AICTE but not for travel abroad to attend conferences/seminars. Travel expenses within the country for presenting a paper may be covered.",
+        "Expenditure incurred towards hiring staff on a contract basis shall be considered only if recommended by Experts and approved by AICTE. No budget can be utilized for hiring permanent staff."
+      ]
+    },
+    "documents": [
+      "APR, AUC, R&P, Statement of Expenditure on completion of each financial year.",
+      "Copies of GFR-19, copies of bills & vouchers, and stock entry register duly attested.",
+      "PCR with consolidated AUC & R&P.",
+      "Feedback Form."
+    ],
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_37",
+    "title": "Fellowship for Superannuated Faculty Members",
+    "description": "The 'Fellowship for Superannuated Faculty Members' scheme is a fellowship scheme by the University Grants Commission (UGC), Department of Higher Education, to provide opportunities to superannuated faculty members of Universities/Institutes/Colleges to pursue research in their area(s).",
+    "eligibility": [
+      "Faculty members at the level of Professors/Associate Professors (who are going to superannuate within six months or already superannuated) from the following institutions:",
+      "Universities (including constituent and affiliated colleges/institutions) included under Section 2(f) of the UGC Act, 1956, and having valid accreditation from NAAC.",
+      "Deemed to be Universities under Section 3 of the UGC Act 1956 and having valid accreditation from NAAC.",
+      "Institutions fully funded by Central or State Governments and empowered to award Degrees.",
+      "Institutions of National Importance.",
+      "Age: Up to 67 years.",
+      "The applicant must have successfully supervised the Ph.D. dissertations of 10 full-time candidates, 3 of whom have received their degrees during the preceding 10 years.",
+      "The applicant must have handled, as Principal Investigator, at least 3 sponsored research projects funded by national/international agencies.",
+      "The applicant shall not hold any administrative responsibility during the tenure of the fellowship, which would be from the date of superannuation.",
+      "The applicant and Institutions shall have to provide an undertaking in the application as per Annexure-I."
+    ],
+    "benefits": {
+      "Tenure and Slots": [
+        "Tenure: 3 years or up to 70 years, whichever is earlier.",
+        "Slots: 100 per annum or as may be decided by the Commission."
+      ],
+      "Financial Assistance": [
+        "Fellowship: Rs. 50,000/- per month.",
+        "Contingency: Rs. 50,000/- per annum."
+      ]
+    },
+    "documents": [
+      "Scanned copy of your passport-size photograph and signature (size up to 1MB, format: jpg).",
+      "Complete Research proposal (size up to 5 MB) and an abstract (size up to 1MB).",
+      "Auto-generated application form (after filling out the form), signed by HoD/Registrar, and uploaded before submission.",
+      "Proof of being a single girl child (if applicable) via an affidavit on a ₹ 100/- stamp paper, duly attested by SDM/First Class Magistrate/Tahsildar. If parents are not alive, the affidavit can be submitted by the guardian (size: less than 1MB)."
+    ],
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_38",
+    "title": "AICTE-Margdarshan Scheme",
+    "description": "The Margdarshan Initiative, introduced by the All India Council for Technical Education (AICTE) in 2018, aims to improve the quality of technical education through accreditation by facilitating access to resources and mentorship. The scheme involves Mentor Institutes (MIs) and Mentee Beneficiary Institutes (MBIs) to foster a supportive ecosystem for quality enhancement in AICTE-approved institutes.",
+    "eligibility": {
+      "For Margdarshan Institute or Mentor Institute (MI)": [
+        "AICTE-approved institutions or Central Funded Institutions (e.g., IITs, NITs, IIITs, IISc, ISERs, IIMs).",
+        "AICTE-approved institutions must have valid accreditation for at least 6 months from the proposal submission date.",
+        "Institutions with diploma courses must have a minimum of four accredited diploma programs.",
+        "Accreditation status for non-engineering programs (e.g., Management, Hotel Management) must be valid for at least 6 months."
+      ],
+      "For Mentee Beneficiary Institute (MBI)": [
+        "Only AICTE-approved institutes are eligible.",
+        "MBIs must not have been enrolled as MIs or mapped with any other MI previously.",
+        "None of their programs should have been accredited in the past ten years."
+      ]
+    },
+    "benefits": {
+      "For Margdarshan Institute or Mentor Institute (MI)": [
+        "A token grant-in-aid of ₹ 3,00,000/- per MBI, with a maximum of ₹ 30,00,000/- for mentoring up to 10 MBIs.",
+        "Suitable honorarium for staff (Chief Coordinator, supporting persons, etc.) engaged in running the scheme, limited to 4% of the overall grant.",
+        "Travel Allowances (TA) and honorarium for internal experts:",
+        "   - AC 2-tier accommodation/Chair Car for train travel.",
+        "   - By own car/taxi limited to prevailing government rates.",
+        "   - Honorarium: ₹ 3,000/- per day.",
+        "Local support (lodging, boarding, secretarial support, etc.) to be provided by the host MBI during expert visits.",
+        "Note: Overall expenditure shall not exceed the sanctioned grant. No reimbursement for excess expenditure."
+      ],
+      "For Mentee Beneficiary Institute (MBI)": [
+        "Workshops on accreditation processes, SWOT analysis, and infrastructure project submissions.",
+        "FDPs/Workshops on research, consultancy, industrial projects, and faculty motivation.",
+        "Institutional visits to MIs or other accredited institutes.",
+        "Guest lectures on innovation, start-ups, entrepreneurship, and curriculum modifications.",
+        "Benchmarking exercises and mapping of activities with Graduate Aptitudes.",
+        "Workshops on AICTE initiatives, NIRF ranking parameters, and Outcome-Based Education (OBE).",
+        "Institutional reforms: curricular reforms, student performance evaluation, faculty appraisal, and research interaction.",
+        "Quality improvement: student learning, employability, faculty productivity, and satisfaction levels."
+      ]
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_39",
+    "title": "AICTE - Distinguished Chair Professor Fellowship",
+    "description": "A Fellowship Scheme by the All India Council for Technical Education (AICTE), Ministry of Education, aimed at utilizing the expertise of highly qualified and experienced superannuated professionals who have made exceptional contributions in their respective fields. The fellowship is intended to motivate and inspire students and faculty of AICTE-approved institutes. The fellowship is tenable for a period of three years or until the age of 75 years (extendable till 80 years subject to fitness).",
+    "eligibility": [
+      "The awardee must be a highly qualified superannuated professional in their field.",
+      "The awardee should be an acknowledged leader/expert in their field of specialization, with active engagement in research and development.",
+      "The awardee should have contributed significantly to the development of society through excellent fieldwork."
+    ],
+    "benefits": [
+      "An honorarium of ₹10,000/- per day for full-day interaction with faculty/students of the host institute and nearby institutions, up to a maximum of five days in a single trip.",
+      "Actual travel expenses (train/air/car) will be covered.",
+      "In Online Mode: Institutions are allowed to host up to 5 online sessions/talks with one Distinguished Chair Professor (DCP) assigned by AICTE. Each session should be a minimum of 2 hours, followed by 1 hour of interaction."
+    ],
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_40",
+    "title": "CBSE Merit Scholarship Scheme For Single Girl Child",
+    "description": "A scholarship scheme by the Ministry of Education for meritorious Single Girl Students, who are the only child of their parents, and have passed the CBSE Class 10th Examination with 60% or more marks. The scheme aims to recognize the efforts of parents in promoting education among girls and to provide encouragement to meritorious students. The scholarship is ₹500/- per month, paid for a maximum period of two years through ECS/NEFT. The tuition fee should not exceed ₹1,500/- per month during the academic year, with a maximum 10% increase over the next two years. The scholarship is awarded to Indian Nationals only.",
+    "eligibility": [
+      "The applicant must be the single girl child of her family.",
+      "The applicant must have secured 60% or more marks in the CBSE Class 10th Examination and be studying in Class 11th & 12th in a CBSE-affiliated school.",
+      "The tuition fee should not exceed ₹1,500/- per month during the academic year, with a maximum 10% increase over the next two years.",
+      "The applicant must be an Indian National.",
+      "The student must continue her school studies in Classes 11th and 12th.",
+      "The applicant must have passed the CBSE Class 10th Examination in 2019.",
+      "Note: NRI applicants are also eligible, with a maximum tuition fee of ₹6,000/- per month."
+    ],
+    "benefits": {
+      "Scholarship Amount": "₹500/- per month.",
+      "Duration": "Maximum of two years.",
+      "Payment Mode": "ECS/NEFT."
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "women",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_41",
+    "title": "Collaborative Research Scheme (CRS)",
+    "description": "Launched by the All India Council for Technical Education (AICTE), the Collaborative Research Scheme (CRS) aims to provide financial support in the form of research grants to young TEQIP (Technical Education Quality Improvement Programme) faculty recruited in TEQIP institutes. The scheme encourages collaboration for research and builds a research community.",
+    "eligibility": [
+      "Proposals must be submitted by a group of at least three faculty members, including one Principal Investigator (PI) from a TEQIP institution and Co-Principal Investigators (Co-PIs) from TEQIP or Non-TEQIP institutions.",
+      "One TEQIP faculty from the host institute must be the PI.",
+      "Co-PI-1 should preferably be a regular faculty from the host TEQIP institute, belonging to the same department as the PI.",
+      "A maximum of two proposals can be submitted by one PI.",
+      "Only one proposal per PI will be sanctioned at any given time.",
+      "Priority for collaboration should be given to TEQIP mentor institutes, NITs, IITs, or Central Universities in the same state or region.",
+      "Additional Co-PIs can be from any institution (TEQIP or Non-TEQIP, India or abroad) or industrial sectors."
+    ],
+    "benefits": {
+      "Limit of Funding": [
+        "Maximum funding of ₹ 25,00,000/-.",
+        "Recurring: 40%, Non-Recurring: 60% of the total grant.",
+        "Institutes must open a separate bank account in a nationalized bank for the grant.",
+        "Extra funds are provided only in special cases."
+      ],
+      "Disbursement of Funds": [
+        "25% of the total sanctioned Non-Recurring Grant and 25% of the total sanctioned Recurring Grant are disbursed in the first installment.",
+        "The remaining funds are disbursed after submission of the Utilization Certificate, requisite documents, and project review by the expert committee."
+      ]
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_42",
+    "title": "Swami Vivekananda Single Girl Child Fellowship for Research in Social Sciences",
+    "description": "A fellowship scheme by the University Grants Commission (UGC) for single girl children pursuing research in Social Sciences. The scheme aims to compensate for the direct costs of higher education for girls who are the only child in their family. It promotes the value of small family norms and encourages the concept of a single girl child in society.",
+    "eligibility": [
+      "The applicant must be a single girl child of her parents pursuing a Ph.D. in Social Sciences in Universities/Colleges/Institutes.",
+      "The scheme is not applicable if the family has one son and one daughter.",
+      "The applicant must be enrolled in a regular, full-time Ph.D. program in Social Sciences in:",
+      "   - Universities/Colleges/Institutes included under Section 2(f) and 12(b) of the UGC Act, 1956.",
+      "   - Deemed to be Universities under Section 3 of the UGC Act, 1956, eligible for UGC grants.",
+      "   - Central/State Government-funded institutions.",
+      "   - Institutes of National Importance.",
+      "Distance education mode is not covered under the scheme.",
+      "Age limit: Up to 40 years for general category and 45 years for SC/ST/OBC/PWD candidates as of the last date of application.",
+      "Transgender candidates are eligible as per norms."
+    ],
+    "benefits": {
+      "Financial Assistance": [
+        "Fellowship: ₹25,000/- per month for the initial two years; ₹28,000/- per month for the remaining tenure.",
+        "Contingency: ₹10,000/- per annum for the initial two years; ₹20,500/- per annum for the remaining tenure.",
+        "Escort Reader Assistance: ₹2,000/- per month for Persons with Disabilities (PWD) candidates."
+      ],
+      "Slots": "The number of slots is decided annually based on eligible applications received through online mode.",
+      "Tenure": [
+        "Five years, effective from 1st April of the selection year or the date of joining, whichever is later.",
+        "Fellowship ends upon submission of the Ph.D. thesis or completion of five years, whichever is earlier.",
+        "No extension beyond five years is permissible."
+      ],
+      "HRA": [
+        "Suitable single-seated hostel accommodation may be provided. In such cases, only hostel fees (excluding mess, electricity, water charges) are covered.",
+        "If hostel accommodation is unavailable, rent reimbursement is provided up to the HRA ceiling as per Govt. of India norms.",
+        "If the fellow arranges her own accommodation, HRA is provided as per Govt. of India city categorization.",
+        "A certificate (Annexure-VI) must be submitted for HRA claims."
+      ],
+      "Medical": "No separate medical assistance is provided. Fellows may avail of medical facilities available in their institutions.",
+      "Leave": [
+        "Maximum of 30 days of leave per year, in addition to public holidays. No other vacations (summer, winter, etc.) are allowed.",
+        "Maternity leave as per Govt. of India norms is available once during the tenure.",
+        "Academic leave (without fellowship) is permissible for up to one year for academic/teaching assignments or foreign visits related to research. This period counts towards the tenure."
+      ]
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "women",
+    "category": "general,sc,st,obc"
+  },
+  {
+    "id": "scheme_43",
+    "title": "Emeritus Fellowship",
+    "description": "The Emeritus Fellowship scheme provides an opportunity for superannuated teachers to pursue active research in their respective fields of specialization in Indian Universities/Colleges/Institutions. The scheme is applicable to institutions under Section 2(f) and 12(b) of the UGC Act, 1956, Deemed to be Universities under Section 3 of the UGC Act, 1956, Central/State Government-funded institutions, and Institutes of National Importance.",
+    "eligibility": {
+      "Target Group": "Highly qualified and experienced superannuated teachers of recognized universities/colleges/institutions.",
+      "Criteria": [
+        "Eligibility is based on the quality of research and published work during the teacher's service career.",
+        "The awardee can work under this scheme up to the age of 70 years or for two years (non-extendable), whichever is earlier.",
+        "No extension is admissible."
+      ]
+    },
+    "benefits": {
+      "Honorarium": "₹31,000/- per month for two years (non-extendable).",
+      "Contingency Grant": [
+        "₹50,000/- per annum for secretarial assistance, travel within the country, stationery, postage, consumables, books, journals, and equipment.",
+        "Books, journals, and equipment procured will be the property of the university/college/institute."
+      ],
+      "Foreign Visit": [
+        "Limited to once a year with prior approval from the institution/university and UGC.",
+        "No financial liability on UGC."
+      ],
+      "Other Privileges": [
+        "Medical facilities as available to university faculty members.",
+        "No housing facilities are provided."
+      ]
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_44",
+    "title": "Post Doctoral Fellowship to Scheduled Caste/Scheduled Tribe Candidates",
+    "description": "This scheme is initiated to provide SC/ST candidates with an opportunity to undertake advanced studies and research in Science, Engineering & Technology, Humanities, and Social Sciences in Indian Universities/Institutions/Colleges. It aims to support candidates from deprived sections of society in pursuing postdoctoral research.",
+    "eligibility": {
+      "Target Group": "Unemployed SC/ST candidates with a Ph.D. degree and aptitude for research.",
+      "Criteria": [
+        "The candidate must have a doctorate degree in the relevant subject, preferably with published research work. Provisional degree certificates are accepted if the degree is not awarded.",
+        "Candidates must belong to the Scheduled Caste/Scheduled Tribe category.",
+        "Only Ph.D. awarded unemployed candidates are eligible.",
+        "Upper age limit: 50 years for male applicants and 55 years for female applicants as of the last date of application.",
+        "Candidates must have 50% marks at the UG level and 55% marks at the PG level.",
+        "A No Objection Certificate (NOC) from the proposed research place, duly forwarded by the Head of Department and Registrar/Director/Principal, must be uploaded.",
+        "Transgender candidates are eligible as per Govt. of India norms."
+      ]
+    },
+    "benefits": {
+      "Financial Assistance": [
+        {
+          "Item": "Fellowship",
+          "Pre-revised Rate": "₹16,000/- per month",
+          "Revised Rate (w.e.f. 01.12.2014)": "₹38,800/- per month for the first 2 years; ₹46,500/- per month from the third year onwards."
+        },
+        {
+          "Item": "Contingency",
+          "Pre-revised Rate": "₹30,000/- per annum",
+          "Revised Rate": "₹50,000/- per annum"
+        },
+        {
+          "Item": "Departmental Assistance",
+          "Pre-revised Rate": "10% of the Post Doctoral Fellowship to the host Institution",
+          "Revised Rate": "Not applicable"
+        },
+        {
+          "Item": "Escorts/Reader/Assistance",
+          "Pre-revised Rate": "₹2,000/- per month (fixed) for physically disabled & blind candidates.",
+          "Revised Rate": "₹2,000/- per month (fixed) for physically disabled & blind candidates."
+        },
+        {
+          "Item": "HRA",
+          "Pre-revised Rate": "As per University/Institution rules.",
+          "Revised Rate": "As per University/Institution rules."
+        }
+      ],
+      "House Rent Allowance (HRA)": [
+        "Suitable single-seated hostel accommodation may be provided. In such cases, only hostel fees (excluding mess, electricity, water charges) are covered.",
+        "If hostel accommodation is unavailable, rent reimbursement is provided up to the HRA ceiling as per Govt. of India norms.",
+        "If the fellow arranges their own accommodation, HRA is provided as per Govt. of India city categorization."
+      ],
+      "Medical": "No separate medical assistance is provided. Fellows may avail of medical facilities available in their institutions.",
+      "Leave": [
+        "Maximum of 30 days of leave per year, in addition to public holidays. No other vacations (summer, winter, etc.) are allowed.",
+        "Maternity/Paternity leave as per Govt. of India rules is available once during the tenure.",
+        "Academic leave (without fellowship) is permissible for up to one year for academic/teaching assignments or foreign visits related to research. This period counts towards the tenure."
+      ]
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "women",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_45",
+    "title": "AICTE-Technical University Joint Training Programs for Teachers",
+    "description": "Launched by the All India Council for Technical Education (AICTE), this scheme aims to provide financial assistance to technical universities to conduct training programs for faculty members. The goal is to improve teaching-learning methodologies and prepare faculty for successful careers in technical education.",
+    "eligibility": "AICTE-approved institutions affiliated with the partner university are eligible to participate.",
+    "benefits": {
+      "Maximum Total Expenditure": "₹3,00,000/- per training program, equally shared by AICTE and the university.",
+      "AICTE Contribution": [
+        "₹1,50,000/- or actual expenditure, whichever is less, to cover:",
+        "   - TA/DA/Honorarium to Resource Persons (Honorarium not to exceed 20% of total expenditure).",
+        "   - TA to outstation participants.",
+        "   - Course material for participants."
+      ],
+      "University Contribution": [
+        "₹1,50,000/- or actual expenditure, whichever is less, to cover:",
+        "   - Boarding & lodging of participants.",
+        "   - Honorarium to Program Coordinator (not to exceed 1% of total expenditure).",
+        "   - Working expenses (tea/coffee/stationery/certificates/printing, etc.)."
+      ]
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_46",
+    "title": "Rajiv Gandhi National Fellowship for Scheduled Caste Candidates",
+    "description": "The Rajiv Gandhi National Fellowship (RGNF) Scheme for Scheduled Caste is funded by the Ministry of Social Justice & Empowerment. It provides financial assistance to SC candidates pursuing full-time M.Phil. and Ph.D. degrees in Sciences, Humanities, Social Sciences, and Engineering & Technology. There are 2000 slots annually, with 3% reserved for Persons with Disabilities (PwD) belonging to SC categories.",
+    "eligibility": {
+      "Target Group": "SC candidates who have passed the post-graduation examination and are pursuing full-time research without JRF of UGC-NET or UGC-CSIR NET.",
+      "Criteria": [
+        "The candidate must belong to the SC category and have passed the Post Graduate Examination.",
+        "The candidate must be registered for M.Phil./Ph.D.",
+        "Transgender candidates are eligible as per Govt. of India norms."
+      ]
+    },
+    "benefits": {
+      "Duration of Fellowship": [
+        {
+          "Course": "M.Phil.",
+          "Maximum Duration": "2 years or submission of dissertation, whichever is earlier.",
+          "Admissibility of JRF": "2 years.",
+          "Admissibility of SRF": "Nil."
+        },
+        {
+          "Course": "M.Phil./Ph.D.",
+          "Maximum Duration": "5 years from commencement of fellowship or submission of Ph.D. thesis, whichever is earlier.",
+          "Admissibility of JRF": "2 years.",
+          "Admissibility of SRF": "Remaining 3 years."
+        },
+        {
+          "Course": "Ph.D.",
+          "Maximum Duration": "5 years or submission of Ph.D. thesis, whichever is earlier.",
+          "Admissibility of JRF": "2 years.",
+          "Admissibility of SRF": "Remaining 3 years."
+        }
+      ],
+      "Amount of Fellowship": [
+        {
+          "Category": "Fellowship (Sciences, Humanities, and Social Sciences)",
+          "JRF": "₹25,000/- per month for the initial two years.",
+          "SRF": "₹28,000/- per month for the remaining tenure."
+        },
+        {
+          "Category": "Contingency (Humanities & Social Sciences)",
+          "JRF": "₹10,000/- per annum for the initial two years.",
+          "SRF": "₹20,500/- per annum for the remaining tenure."
+        },
+        {
+          "Category": "Contingency (Science, Engineering & Technology)",
+          "JRF": "₹12,000/- per annum for the initial two years.",
+          "SRF": "₹25,000/- per annum for the remaining tenure."
+        },
+        {
+          "Category": "Escorts/Reader Assistance (All Subjects)",
+          "Rate": "₹2,000/- per month for physically handicapped & blind candidates."
+        },
+        {
+          "Category": "HRA (All Subjects)",
+          "Rate": "As per Govt. of India norms."
+        }
+      ],
+      "House Rent Allowance (HRA)": [
+        "Suitable single-seated hostel accommodation may be provided. In such cases, only hostel fees (excluding mess, electricity, water charges) are covered.",
+        "If hostel accommodation is unavailable, rent reimbursement is provided up to the HRA ceiling as per Govt. of India norms.",
+        "If the fellow arranges their own accommodation, HRA is provided as per Govt. of India city categorization.",
+        "A certificate (Annexure-VI) must be submitted for HRA claims."
+      ],
+      "Medical": "No separate medical assistance is provided. Fellows may avail of medical facilities available in their institutions.",
+      "Leave": [
+        "Maximum of 30 days of leave per year, in addition to public holidays. No other vacations (summer, winter, etc.) are allowed.",
+        "Maternity/Paternity leave as per Govt. of India rules is available once during the tenure.",
+        "Academic leave (without fellowship) is permissible for up to one year for academic/teaching assignments or foreign visits related to research. This period counts towards the tenure.",
+        "If the awardee wishes to apply for another fellowship/paid assignment/examination, they must resign from the RGNF.",
+        "All leave must be approved by the University/Institute/College."
+      ]
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_47",
+    "title": "National Scheme of Apprenticeship Training",
+    "description": "The National Scheme of Apprenticeship Training, overseen by the Department of Higher Education, Ministry of Education, is managed by four Regional Boards of Apprenticeship/Practical (BOATs/BOPT) in Mumbai, Kanpur, Chennai, and Kolkata. The scheme provides practical training to graduate engineers, diploma holders (Technicians), and 10+2 Vocational pass-outs in approximately 10,000 industrial establishments. It operates under the guidelines of the Central Apprenticeship Council (CAC), a statutory body created under the Apprentices Act, 1961. The primary goal is to bridge the gap in practical experience for fresh graduates and vocational pass-outs. The training duration is one year, with a monthly stipend shared equally between the Central Government and the employer.",
+    "eligibility": [
+      "Graduate Engineers.",
+      "Diploma Holders (Technicians).",
+      "10+2 Vocational Pass-outs."
+    ],
+    "benefits": [
+      {
+        "Benefit": "One-year Apprenticeship Training period."
+      },
+      {
+        "Benefit": "Monthly stipend during training:",
+        "Details": [
+          "Engineering Graduate: ₹4,984 per month.",
+          "Technicians: ₹3,542 per month.",
+          "10+2 Vocational pass-outs: ₹2,758 per month."
+        ]
+      },
+      {
+        "Benefit": "Stipend sharing:",
+        "Details": "The stipend is shared equally between the Central Government and the employer. The employer initially pays the full stipend and later claims 50% reimbursement from the Central Government through BOATs/BOPT."
+      }
+    ],
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general"
+  },
+  {
+    "id": "scheme_48",
+    "title": "AICTE e-Shodh Sindhu Scheme (eSS)",
+    "description": "Launched by the All India Council for Technical Education (AICTE), the e-Shodh Sindhu Scheme (eSS) provides subscriptions to e-Resources such as Web of Science, Scopus, The American Society of Mechanical Engineers (ASME), American Society of Civil Engineers (ASCE), and Bentham Science to institutions. The scheme aims to facilitate access to e-Resources for students, faculty, and researchers, fostering a culture of research and improving the quality of technical education.",
+    "eligibility": [
+      "AICTE-approved Government/Government-aided institutes.",
+      "The institute must have a digital library network with internet bandwidth (32 Mbps) and Wi-Fi connectivity, along with one or more static IP addresses.",
+      "The proposed coordinator must be a full-time regular faculty member with at least 10 years of teaching and research experience, including publications.",
+      "The institute must also identify a co-coordinator with at least 7 years of teaching and research experience.",
+      "The institute must have PG courses in:",
+      "   - Mechanical Engineering (for ASME).",
+      "   - Civil Engineering (for ASCE).",
+      "   - Pharmacy (for Bentham Science).",
+      "   - Any discipline (for Web of Science/Scopus)."
+    ],
+    "benefits": [
+      "Subscriptions to e-Resources like Web of Science, Scopus, ASME, ASCE, and Bentham Science.",
+      "Duration: Initially for one calendar year, renewable annually based on usage and fulfillment of eligibility criteria."
+    ],
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_49",
+    "title": "Financial Support Scheme",
+    "description": "Implemented by Delhi University, the Financial Support Scheme aims to provide equity and access to quality education for economically weak students. The scheme offers financial support, including a fee waiver for all components of fees (except examination and hostel fees).",
+    "eligibility": [
+      "The student must be a bonafide student of Delhi University.",
+      "The student should be enrolled in any UG/PG degree program at a Department/Institution/Centre of Delhi University.",
+      "The student's family income should be less than ₹8,00,000/- per annum."
+    ],
+    "benefits": [
+      {
+        "Category": "Category 1",
+        "Family Income": "Less than or equal to ₹4,00,000/- per annum",
+        "Fee Waiver": "Up to 100%",
+        "Remarks": "Actual fee or up to a maximum of ₹10,000/-."
+      },
+      {
+        "Category": "Category 2",
+        "Family Income": "Between ₹4,00,000/- and ₹8,00,000/- per annum",
+        "Fee Waiver": "Up to 50%",
+        "Remarks": "Actual fee or up to a maximum of ₹8,000/-."
+      }
+    ],
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 800000,
+    "occupation": "student",
+    "other": "",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_50",
+    "title": "Pradhan Mantri Uchchatar Shiksha Protsahan (PM-USP) Central Sector Scheme of Scholarship for College and University Students",
+    "description": "A scholarship scheme by the Department of Higher Education, Ministry of Education, aimed at providing financial assistance to meritorious students from poor families to meet a part of their day-to-day expenses while pursuing higher studies. Scholarships are awarded based on the results of the Higher Secondary/Class 12th Board Examination. A maximum of 82,000 fresh scholarships are provided annually for Graduate/Postgraduate degrees and professional courses like Medical, Engineering, etc.",
+    "eligibility": [
+      "The applicant must be above the 80th percentile of successful candidates in the relevant stream from the respective Board of Examination in Class 12th or equivalent.",
+      "The applicant must be pursuing regular degree courses at colleges/institutions recognized by AICTE and respective regulatory bodies.",
+      "The gross parental/family income of the applicant should not exceed ₹4,50,000/- per annum.",
+      "For renewal, the student must score at least 50% marks in the annual examination and maintain at least 75% attendance.",
+      "Students must have a bank account in their name."
+    ],
+    "benefits": {
+      "Rate of Scholarship": [
+        "₹12,000/- per annum at the Graduation level for the first three years of College and University courses.",
+        "₹20,000/- per annum at the Post-graduation level.",
+        "₹20,000/- per annum in the 4th and 5th year for students pursuing professional courses with a duration of five years or integrated courses.",
+        "Students pursuing technical courses like B.Tech/B.Engg. will receive ₹12,000/- per annum for the first three years and ₹20,000/- in the 4th year."
+      ],
+      "Mode of Disbursal": "The scholarship is disbursed directly into the savings bank accounts of beneficiaries through Direct Benefit Transfer (DBT)."
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_51",
+    "title": "National Scheme of Incentive to Girls for Secondary Education",
+    "description": "The National Scheme of Incentive to Girls for Secondary Education aims to promote the enrolment of girls aged 14-18 years at the secondary stage, particularly those who pass class 8th but drop out due to socio-economic reasons. The scheme intends to retain such girls up to class 12th. In 2004-05, the dropout rate for girls from classes 1st to 8th was 50.8%, and from classes 1st to 10th, it was 64%. The scheme addresses the financial constraints faced by parents in educating their girl children.",
+    "eligibility": [
+      "The applicant must be a girl child.",
+      "The applicant must belong to Scheduled Caste (SC) or Scheduled Tribe (ST).",
+      "The applicant must have passed class 8th from Kasturba Gandhi Balika Vidyalayas (irrespective of SC/ST status).",
+      "The applicant must have enrolled in class 9th in State/UT Government, Government-aided, or local body schools in the academic year 2008-09 onwards."
+    ],
+    "benefits": {
+      "Incentive": "A sum of ₹3,000/- is deposited under a term/fixed deposit in a public sector bank or post office in the name of the eligible girl child. The deposit matures when the girl attains 18 years of age, and no premature withdrawal is allowed."
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "women",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_52",
+    "title": "Dr. D.S. Kothari Research Grant for Newly Recruited Faculty Members",
+    "description": "A research grant scheme by the University Grants Commission (UGC), Department of Higher Education (DoHE), aimed at providing opportunities to newly appointed faculty members of Universities/Institutes/Colleges to pursue research in their respective fields. The scheme is open to Assistant Professors appointed against permanent posts, possessing a Ph.D. degree with at least five research papers published in journals of international repute. The tenure of the grant is 2 years, with 132 slots available annually.",
+    "eligibility": [
+      "Faculty members must be regularly appointed and working in:",
+      "   - Universities/Institutions included under Section 2(f) of the UGC Act, 1956, with valid NAAC accreditation.",
+      "   - Deemed-to-be Universities under Section 3 of the UGC Act, 1956, with valid NAAC accreditation.",
+      "   - Institutions fully funded by Central/State Governments and empowered to award degrees.",
+      "   - Institutions of National Importance.",
+      "The applicant must be a newly appointed Assistant Professor against a permanent post.",
+      "The Assistant Professor must possess a Ph.D. degree with at least five research papers published in journals of international repute.",
+      "The application must be submitted within two years of joining the post."
+    ],
+    "benefits": {
+      "Tenure and Slots": [
+        "Tenure: 2 years.",
+        "Slots: 132."
+      ],
+      "Financial Assistance": [
+        "The quantum of support is ₹10,00,000.",
+        "The grant can be utilized for purchasing minor equipment, consumables, contingencies, fieldwork, travel, etc.",
+        "Items/equipment purchased from the grant will be the property of the University."
+      ],
+      "Notes": [
+        "The grant cannot be used for international travel, purchasing furniture, or appointing project assistants/research fellows.",
+        "The allocation of funds under various heads can be decided by the recipient based on their needs."
+      ]
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_53",
+    "title": "Post Doctoral Fellowship to Women Candidates",
+    "description": "The UGC has initiated the 'Post Doctoral Fellowship for Women' to support unemployed women holding Ph.D. degrees in their respective subject areas. The scheme aims to accelerate the research potential of women candidates by providing financial assistance for advanced studies and research. The fellowship duration is five years, with no provision for extension, and 100 slots are available annually.",
+    "eligibility": [
+      "The candidate must be unemployed and hold a Ph.D. degree (Provisional Certificate is acceptable if the degree is not awarded).",
+      "The candidate must be 55 years of age as of the last date of application submission. Age relaxation of 5 years is applicable for SC/ST/OBC/PwD candidates.",
+      "Minimum marks required:",
+      "   - General Category: 55% at UG level and 60% at PG level.",
+      "   - Reserved Categories (SC/ST/OBC/PwD): 50% at UG level and 55% at PG level.",
+      "A No Objection Certificate (NOC) from the proposed research center, signed by the HOD and Registrar/Principal/Director, must be uploaded.",
+      "Transgender candidates are eligible as per Govt. of India norms."
+    ],
+    "benefits": {
+      "Financial Assistance": [
+        {
+          "Fellowship": "₹38,800/- per month for the first two years; ₹46,500/- per month thereafter."
+        },
+        {
+          "Annual Contingency": "₹50,000/- per annum for five years."
+        },
+        {
+          "Escorts/Reader Assistance": "₹2,000/- per month (fixed) for Persons with Disabilities (PwD)."
+        }
+      ],
+      "House Rent Allowance (HRA)": [
+        "Suitable single-seated hostel accommodation may be provided. In such cases, only hostel fees (excluding mess, electricity, water charges) are covered.",
+        "If hostel accommodation is unavailable, rent reimbursement is provided up to the HRA ceiling as per Govt. of India norms.",
+        "If the fellow arranges her own accommodation, HRA is provided as per Govt. of India city categorization."
+      ],
+      "Medical": "No separate medical assistance is provided. Fellows may avail of medical facilities available in their institutions.",
+      "Leave": [
+        "Maximum of 30 days of leave per year, in addition to public holidays. No other vacations (summer, winter, etc.) are allowed.",
+        "Maternity leave is available at full rates of the fellowship for 180 days as per Govt. of India rules, once during the tenure.",
+        "Special leave without fellowship and contingency may be granted for up to three months on the recommendation of the Head of the Department."
+      ]
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,sc,st,obc"
+  },
+  {
+    "id": "scheme_54",
+    "title": "Post Graduate Scholarship for GATE/GPAT Qualified Students for Pursuing M.Tech/M.E./M.Pharm - UGC",
+    "description": "The University Grants Commission (UGC) implements this scholarship scheme to support GATE/GPAT-qualified students pursuing M.Tech, M.E., M.Pharm, and integrated dual-degree courses. The scheme aims to attract talented graduate students to pursue postgraduate education in higher education institutions.",
+    "eligibility": [
+      "GATE/GPAT-qualified students admitted to M.Tech, M.E., M.Pharm, or integrated dual-degree programs in Central, State, Deemed, or Private Universities.",
+      "Students must be admitted as full-time scholars.",
+      "Government of India policies for SC/ST/OBC/PwD reservations are strictly followed."
+    ],
+    "benefits": {
+      "Scholarship Amount": "₹12,400/- per month per student.",
+      "Annual Contingency": "₹5,000/- per annum.",
+      "Notes": [
+        "If a student scores below 60% in any semester, the scholarship is reduced to ₹1,550/- for that semester. If the student reappears and scores above 60%, the full scholarship is restored.",
+        "The contingency grant is reimbursed based on actual expenditure. Books and non-consumable items purchased become the property of the institution and must be returned after the program.",
+        "No house rent allowance is provided.",
+        "Scholars must not undertake any paid assignments during the scholarship tenure.",
+        "Scholars are required to undertake 8-10 hours per week of teaching and research-related activities.",
+        "Scholarship is terminated if the student fails any semester."
+      ]
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,sc,st,obc"
+  },
+  {
+    "id": "scheme_55",
+    "title": "Post-Graduate Scholarships for Professional Courses for SC/ST Candidates",
+    "description": "The scheme provides financial assistance to SC/ST candidates for pursuing postgraduate studies in professional courses such as Engineering & Technology, Management, Pharmacy, etc., in recognized Indian Universities/Institutions/Colleges. The objective is to support 1000 SC/ST candidates annually.",
+    "eligibility": [
+      "The student must belong to the SC/ST category.",
+      "The candidate must have a graduate degree in the relevant subject and be admitted to a full-time postgraduate course in a recognized University/Institution/College.",
+      "Only first-year postgraduate students in the current academic year are eligible.",
+      "Eligible Institutions:",
+      "   - Universities/Institutions/Colleges included under Section 2(f) and 12(B) of the UGC Act.",
+      "   - Deemed-to-be Universities under Section 3 of the UGC Act, 1956, eligible for UGC grants.",
+      "   - Central/State Government-funded institutions.",
+      "   - Institutes of National Importance."
+    ],
+    "benefits": {
+      "Tenure": "Two/three years, depending on the duration of the postgraduate course.",
+      "Scholarship Amount": [
+        "For ME/M.Tech: ₹7,800/- per month.",
+        "For other courses: ₹4,500/- per month."
+      ],
+      "Contingency": "No contingency is payable from the selection year 2017-18.",
+      "Payment Start Date": "The scholarship is payable from the date of joining the postgraduate course."
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_56",
+    "title": "AICTE – Mitacs Globalink Research Internship (GRI) Scheme",
+    "description": "AICTE, in collaboration with Mitacs Canada, offers the Globalink Research Internship (GRI) Program to foster cross-border research partnerships between Canada and India. The program is open to students in Science, Technology, Engineering, and Mathematics (STEM) disciplines. The internship duration is 12 weeks, with a maximum of 300 students accepted annually. The total cost of the program is $12,000 CAD per student, with Mitacs contributing $9,000 CAD and AICTE contributing $3,000 CAD. The program covers airfare, visa, medical, stipend, accommodation, and research costs, along with access to professional development activities in Canada.",
+    "eligibility": [
+      "The applicant must be a 3rd-year full-time undergraduate student (B.E/B.Tech) in an AICTE-approved institution.",
+      "The applicant must have a minimum CGPA/GPA of 85% in the 2nd year.",
+      "The applicant must be at least 18 years old.",
+      "The applicant must be available to spend 12 weeks in Canada between May and September for a research project.",
+      "The applicant must demonstrate fluency in English or French, depending on the project's primary language."
+    ],
+    "benefits": {
+      "Total Cost": "$12,000 CAD per student.",
+      "Mitacs Contribution": "$9,000 CAD per student.",
+      "AICTE Contribution": "$3,000 CAD per student.",
+      "Coverage": [
+        "Airfare.",
+        "Visa.",
+        "Medical.",
+        "Stipend.",
+        "Accommodation.",
+        "Globalink Student Mentors.",
+        "Programming and research costs.",
+        "Access to Globalink-branded activities in Canada (e.g., workshops, receptions, industrial engagement)."
+      ]
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_57",
+    "title": "Savitribai Jyotirao Phule Fellowship for Single Girl Child (SJSGC)",
+    "description": "The fellowship is provided by the University Grants Commission (UGC), Department of Higher Education, for pursuing research work leading to the award of a Ph.D. degree. This fellowship is specifically for the single girl child, i.e., the only girl child in the family without any brother or sister. The scheme is aimed to support the higher education of single girl children in Social Sciences.",
+    "eligibility": {
+      "Single Girl Child": "Only the single girl child of the parents",
+      "Ph.D. Program": "Must be enrolled in a regular, full-time Ph.D. program",
+      "Mode": "Not applicable for part-time/distance mode",
+      "Age Limit": {
+        "General Category": "Up to 40 years",
+        "Reserved Categories (SC/ST/OBC/PWD)": "Up to 45 years"
+      },
+      "Terms and Conditions": "Both the scholar and institution must ensure eligibility and adherence to scheme terms"
+    },
+    "benefits": {
+      "Tenure": {
+        "Duration": "5 years",
+        "Effective From": "1st April of the selection year or actual date of joining, whichever is later",
+        "End": "Up to the date of submission of the Ph.D. Thesis or 5 years, whichever is earlier"
+      },
+      "Financial Assistance": {
+        "Fellowship": {
+          "JRF": "₹ 31,000/- p.m. for initial two years",
+          "SRF": "₹ 35,000/- p.m. for the remaining tenure"
+        },
+        "Contingency": {
+          "Humanities and Social Sciences": {
+            "Initial Two Years": "₹ 10,000/- p.a.",
+            "Remaining Tenure": "₹ 20,500/- p.a."
+          },
+          "Science, Engineering, and Technology": {
+            "Initial Two Years": "₹ 12,000/- p.a.",
+            "Remaining Tenure": "₹ 25,000/- p.a."
+          }
+        },
+        "Escort Reader Assistance": "₹ 3,000/- p.m. for ‘Divyang’ scholars",
+        "HRA": {
+          "Hostel Accommodation": "Hostel fees excluding mess, electricity, water charges",
+          "Non-Availability of Hostel": "Reimbursement for single accommodation rent as per Govt. of India norms",
+          "Own Accommodation": "HRA as per Govt. of India norms with certificate from institution"
+        },
+        "Medical Assistance": "No separate medical assistance, but medical facilities of the institution can be availed",
+        "Leave": {
+          "Earned Leave": "Maximum of 30 days per year in addition to public holidays",
+          "Maternity/Paternity Leave": "As per Govt. of India norms for female scholars",
+          "Intermittent Break": "Maximum of 1 year, permissible 3 times, no fellowship available during this period",
+          "Academic Leave": "Permissible for 1 year, counted towards tenure, no fellowship available"
+        }
+      }
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "women",
+    "category": "general,sc,st,obc"
+  },
+  {
+    "id": "scheme_58",
+    "title": "Saksham scheme for specially-abled students",
+    "description": "Saksham is a Scholarship Scheme by the Ministry of Education, implemented by AICTE, aimed at providing encouragement and support to specially-abled children to pursue technical education. It provides financial assistance to specially-abled students enrolled in diploma level courses at AICTE-approved institutions. The scholarship covers various expenses such as college fees, books, equipment, and more, for a maximum of 3 years for first-year students and 2 years for second-year lateral entry students.",
+    "eligibility": {
+      "Admission": "Candidate should be admitted to the First year or Second year (lateral entry) of a Diploma level course in AICTE-approved institutions.",
+      "Disability": "Specially-abled students with a disability of not less than 40%",
+      "Family Income": "Family income should not exceed ₹8 lakh per annum during the current financial year (Income certificate required)"
+    },
+    "benefits": {
+      "Amount": "₹50,000/- per annum for every year of study",
+      "Tenure": {
+        "First Year Admitted Students": "Maximum 3 years",
+        "Second Year Lateral Entry Students": "Maximum 2 years"
+      },
+      "Payment Mode": "Scholarship paid through DBT mode annually",
+      "Renewal": "Scholarship renewed upon submission of passing certificate and letter from the Head of the Institution via National Scholarship Portal"
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 800000,
+    "occupation": "student",
+    "other": "disabled",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_59",
+    "title": "Coaching for SC/ST/OBC (Non-Creamy Layer) & Minority Communities",
+    "description": "The scheme provides coaching to students belonging to SC, ST, OBC (non-creamy layer), and minority communities to help bridge the educational gap and enhance their competitiveness in pursuing higher education. The scheme includes remedial coaching, coaching for entry into services, and coaching for NET/SET exams, targeting both undergraduate and postgraduate students.",
+    "eligibility": {
+      "Institutions": "Universities and colleges eligible under Section 2(f) and Section 12(B) of the UGC Act, 1956.",
+      "Student Criteria": [
+        "Sufficient number of SC/ST/OBC (Non-Creamy Layer) & Minority Community students",
+        "General candidates with BPL cards may also apply.",
+        "Up to 40% of OBC (non-creamy layer) and poor general candidates may be considered if sufficient minority students are unavailable."
+      ]
+    },
+    "benefits": {
+      "Non-Recurring Items": {
+        "Amount": "Up to Rs. 5.0 Lakhs for each scheme during the XII Plan period",
+        "Items": [
+          "Books and Journals",
+          "Audio-visual and teaching/learning aids",
+          "Computers with Printers",
+          "Photocopier",
+          "Generator or Inverter"
+        ]
+      },
+      "Recurring Items": {
+        "Amount": "Rs. 7.0 Lakhs per annum for universities",
+        "Items": [
+          "Honorarium for Coordinator: Rs. 2000/month",
+          "Remuneration for Teachers and Scholars (Rs. 300/hr for theory, Rs. 150-200/hr for practicals)",
+          "Part-time Staff with Computer Knowledge: Rs. 6000/month",
+          "Part-time Peon/Attendant: Rs. 1000/month",
+          "Contingency: Rs. 50,000/year"
+        ]
+      }
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,sc,st,obc,minority"
+  },
+  {
+    "id": "scheme_60",
+    "title": "Junior Research Fellowship (JRF) & Research Associateship (RA) for Foreign Students and Teachers",
+    "description": "The scheme aims to provide an opportunity for foreign students and teachers from developing countries in Asia, Africa, and Latin America to undertake advanced study and research leading to M.Phil/Ph.D. and postdoctoral research in sciences, humanities, and social sciences at Indian Universities.",
+    "eligibility": {
+      "Target Group": "Students and teachers from developing countries in Asia, Africa, and Latin America.",
+      "Junior Research Fellowship (JRF)": {
+        "Age Limit": {
+          "Male": "35 years as of 1st July",
+          "Female": "40 years as of 1st July"
+        },
+        "Academic Qualification": [
+          "High-class master’s degree with a second-class bachelor’s degree or",
+          "Second-class master’s degree with a first-class bachelor’s degree"
+        ]
+      },
+      "Research Associateship (RA)": {
+        "Age Limit": {
+          "Male": "40 years as of 1st July",
+          "Female": "45 years as of 1st July"
+        },
+        "Academic Qualification": [
+          "Doctorate degree with published research work",
+          "Evidence of independent research work"
+        ]
+      }
+    },
+    "benefits": {
+      "Junior Research Fellowship (JRF)": {
+        "Fellowship": [
+          "Rs. 12,000/- per month for the first two years",
+          "Rs. 14,000/- per month for remaining years (subject to committee recommendation)"
+        ],
+        "Contingency": {
+          "Science": "Rs. 12,000/- per annum for the first two years",
+          "Humanities and Social Sciences": "Rs. 10,000/- per annum for the first two years",
+          "Science (remaining period)": "Rs. 25,000/- per annum",
+          "Humanities (remaining period)": "Rs. 20,500/- per annum"
+        },
+        "Other Assistance": {
+          "Departmental": "Rs. 3,000/- per annum",
+          "Escort Allowance": "Rs. 2,000/- per annum",
+          "Handicapped Allowance": "As per institution rules",
+          "HRA": "As per the rules of the concerned institution"
+        }
+      },
+      "Research Associateship (RA)": {
+        "Fellowship": "Rs. 16,000/- per month (fixed) for 4 years",
+        "Contingency": "Rs. 30,000/- per annum",
+        "Departmental Assistance": "10% of Associateship to the host institution for infrastructural facilities",
+        "HRA": "As per the rules of the concerned institution"
+      },
+      "Accommodation": {
+        "Hostel": "Single-seated hostel accommodation may be provided or HRA as per university rules",
+        "Own Accommodation": "HRA as per city categorization by Government of India"
+      },
+      "Medical": "No separate medical assistance, but medical facilities available at institutions/universities.",
+      "Leave": {
+        "Annual Leave": "Maximum 30 days, excluding public holidays",
+        "Maternity Leave": "135 days for female awardees as per Government of India rules",
+        "Special Leave": "Leave without fellowship for up to three months (subject to approval)"
+      }
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "women",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_61",
+    "title": "Dr. D.S. Kothari Post Doctoral Fellowships in Sciences",
+    "description": "Introduced by the University Grants Commission, Dept. of Higher Education, to provide a flexible Post Doctoral Fellowship scheme with fast-track online handling and decision-making.",
+    "eligibility": "Ph.D. awarded unemployed candidates in relevant subjects with published research work; upper age limit of 35 years, with relaxation for SC/ST/OBC/Women candidates as per Government of India norms.",
+    "benefits": {
+      "Financial Assistance": {
+        "Fellowship": {
+          "1st Year": "Rs. 43,800 per month",
+          "2nd Year": "Rs. 45,000 per month",
+          "3rd Year": "Rs. 46,500 per month"
+        },
+        "Contingency": "Rs. 1,00,000 per annum"
+      },
+      "HRA": [
+        "Hostel accommodation: Hostel fees (excluding mess, electricity, water charges) reimbursed upon furnishing a certificate.",
+        "Single accommodation in host institution: Rent reimbursed as per actuals up to the ceiling of HRA as per Govt. norms.",
+        "Own accommodation: HRA as per city categorization."
+      ],
+      "Medical": "Access to medical facilities available in the University/Institution/College.",
+      "Leave": [
+        "30 days per year (in addition to public holidays) with approval from the Head of Department.",
+        "Maternity/Paternity leave as per Government of India rules.",
+        "Academic leave up to one year without fellowship for teaching or foreign travel for academic work."
+      ]
+    },
+    "documents": [
+      "Joining Report (prescribed format) signed by Head of Department and countersigned by Registrar.",
+      "Continuation Certificate every three months.",
+      "Contingency utilization certificate (end of each year).",
+      "HRA Certificate every three months."
+    ],
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,sc,st,obc"
+  },
+  {
+    "id": "scheme_62",
+    "title": "Innovation In Science Pursuit For Inspired Research (INSPIRE) - Faculty Fellowship",
+    "description": "Provides opportunities for 100 young researchers annually with Ph.D. qualifications to carry out independent research in science, technology, medicine, agriculture, pharmacy, and veterinary sciences. The fellowship aims to develop independent scientific profiles and augment high-quality manpower in scientific institutions.",
+    "eligibility": "Indian citizens or People of Indian Origin with Ph.D. degrees in relevant fields, aged 27-32 years (relaxed for SC/ST/Women up to 37 years, and Divyangjan up to 42 years). Candidates must have a minimum of 60% marks throughout their academic career and publications in reputed journals. Applicants awaiting their Ph.D. award can apply but must secure their degree before selection confirmation.",
+    "benefits": "Fellowship of ₹1,25,000 per month with an annual increment of ₹2,000 and a Research Grant of ₹7,00,000 per year for five years. The fellowship is taxable as per Indian IT Act.",
+    "documents": "Passport-size photograph, Class X Mark Sheet or Certificate (proof of Date of Birth), Academic certificates from Class XII onwards, Caste Certificate (if applicable), Letter of appointment (if employed), Professional recognitions and awards, Research experience, Budget breakup for research grants, and Endorsements/letters from host institutes.",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_63",
+    "title": "Junior Research Fellowship (JRF) - Department of Biotechnology (DBT)",
+    "description": "The DBT Junior Research Fellowship (JRF) program provides financial support to Indian students pursuing doctoral research in biotechnology and life sciences. It is open to candidates with a master's degree in biotechnology or related fields.",
+    "eligibility": "1. Applicant must be an Indian citizen. 2. Must have a master's degree in biotechnology or a related field from a recognized university. 3. Should have cleared the GATE or NET exam in biotechnology or a related field. 4. Age limit: 28 years for General and EWS candidates, and 33 years for SC/ST/PH candidates. 5. Must be willing to pursue full-time doctoral research in biotechnology or a related field at a recognized university or research institution in India.",
+    "benefits": "1. ₹31,000 per month for the first two years. 2. ₹35,000 per month for the remaining three years.",
+    "documents": "1. BET exam scorecard. 2. Research proposal. 3. No Objection Certificate (NOC) from the current employer (if applicable). 4. Passport-size photograph. 5. Signature. 6. Date of birth proof. 7. Academic transcripts for all degrees obtained. 8. Category certificate (if applicable). 9. Persons with Disability (PWD) certificate (if applicable).",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_64",
+    "title": "Scholarships to Students with Disabilities Scheme",
+    "description": "The scheme, initiated by the Department of Social Security and Women & Child Development, Government of Punjab in 1996, aims to assist students with disabilities in securing education, academic, technical, or professional training to help them earn a living and integrate as contributing members of society. It is fully state-sponsored.",
+    "eligibility": "1. Applicant must be a student in Punjab with a disability of 40% or more (as per the RPwD Act 2016). 2. The monthly family/guardian income should not exceed ₹5,000/- per month. 3. The candidate should have secured at least 40% marks in the previous annual examination. 4. Applicable for students with disabilities from 1st class onwards.",
+    "benefits": "1. ₹200/- per month for students with disabilities from class 1 to 8. 2. ₹300/- per month for students with disabilities from class 9 and onwards. Note: The scholarship will be credited directly to the student's bank account.",
+    "documents": "1. Disability Certificate/ UDID showing 40% or more disability. 2. Income certificate showing annual family income below ₹60,000/-. 3. Copy of bank account details.",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "disabled",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_65",
+    "title": "Stipend to Scheduled Caste Trainees in Technical Training Institutions",
+    "description": "This scheme, implemented by the Adi Dravidar Welfare and Scheduled Tribes Welfare Department, Union Territory of Puducherry, provides financial support to Scheduled Tribe candidates/trainees undergoing training in Government Technical Training Institutions within the Union Territory of Puducherry.",
+    "eligibility": "1. Candidates/trainees undergoing training in the Government Technical Training Institutions of Puducherry. 2. The candidate must belong to the Scheduled Caste community. 3. There is no income limit to apply under the scheme.",
+    "benefits": "1. A stipend of ₹170/- per month per trainee for the entire duration of the training.",
+    "documents": "1. Identity proof (Aadhaar Card). 2. Passport size photograph. 3. Educational documents (Mark sheets). 4. Caste certificate. 5. Nativity Certificate issued by the Competent Revenue Officials. 6. Bank account details. 7. Any other document, as required.",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_66",
+    "title": "Post Graduate Indira Gandhi Scholarship For Single Girl Child",
+    "description": "A scholarship scheme by the University Grants Commission (UGC) for girl students admitted to the first year of PG courses in any designated university or postgraduate college, provided they are the only girl child in their family. The scheme aims to support the postgraduate education of single girl children and promote the value of small family norms.",
+    "eligibility": "1. The applicant must be a citizen of India. 2. The applicant must be the only girl child in the family. 3. Girl students without brothers or who are twin/fraternal daughters may apply. 4. The age of the applicant should not exceed 30 years at the time of admission to the first year of the PG course. 5. The applicant must have taken admission to a regular, full-time first-year Master’s Degree course in a designated university or postgraduate college. 6. The course must be non-professional, and the student must attend regular classes. 7. Students pursuing education through distance mode are not eligible.",
+    "benefits": "1. ₹36,200/- per annum for two years, i.e., the full duration of the PG course. 2. 3,000 fresh scholarships are awarded annually and disbursed through DBT mode.",
+    "documents": {
+      "By Student": [
+        "Aadhaar Card",
+        "Proof of admission into a recognized Master’s degree course in an institute located in India recognized by the UGC.",
+        "Joining report (Annexure-I format).",
+        "Affidavit regarding single girl child status (Annexure-II format).",
+        "Copy of the Bank Passbook.",
+        "Birth Certificate or Class 10th Marksheet."
+      ],
+      "By Institution": [
+        "Progress Report after completion of the first year along with the percentage of marks obtained.",
+        "Funds Utilization Certificate after completion of the first year."
+      ]
+    },
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "women",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_67",
+    "title": "Award of Opportunity Cost to Parents of Scheduled Caste Girl Students",
+    "description": "Implemented by the Adi Dravidar Welfare Department, Government of Puducherry, this scheme aims to financially assist Scheduled Caste parents for sending their daughters to school. It provides opportunity cost compensation to eliminate child labor and encourage education among Scheduled Caste girl students.",
+    "eligibility": "1. The student must be a girl studying in Class VI to XII in a Government or Government-recognized institution in Puducherry. 2. The student must belong to the Scheduled Caste community. 3. The girl student and her parent/guardian must be a native of Puducherry by birth or continuous residence for at least 3 years. 4. The annual income of the parents should not exceed ₹24,000. 5. Opportunity cost is payable only if the girl student has been promoted to the next higher class.",
+    "benefits": "₹3,000/- per academic year is payable to the parents of Scheduled Caste girls studying in Classes VI to XII. This amount is provided in addition to the Pre-Matric Scholarship. The opportunity cost is not payable for re-admitted girls repeating a class due to failure or discontinuance.",
+    "documents": [
+      "Aadhaar Card (Identity proof)",
+      "Passport size photograph",
+      "Educational certificates (Mark sheets)",
+      "Caste certificate",
+      "Income certificate",
+      "Residence-cum-nativity certificate issued by the competent authority",
+      "Bank account details"
+    ],
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "women",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_68",
+    "title": "India-Afghanistan Fellowship Programme",
+    "description": "Started in 2010-11, the India-Afghanistan Fellowship Programme supports agricultural human resource development in Afghanistan. It offers fellowships for Afghan nationals to pursue Bachelor's, Master's, and Ph.D. degrees in Indian Agricultural Universities (AUs) in agriculture and allied sciences.",
+    "eligibility": {
+      "General Requirement": "Good knowledge of English for all programmes.",
+      "Bachelor's Degree Programme": {
+        "Academic Qualification": "Passed 10+2 examination with Physics, Chemistry, and Biology/Mathematics or both."
+      },
+      "Master's Degree Programme": {
+        "Academic Qualification": "Four-year Bachelor's degree in agriculture or related subjects.",
+        "Additional Requirements": [
+          "For M.V.Sc.: Passed B.V.Sc. & A.H. with internship under a 5-year degree programme.",
+          "For M.Tech.: Passed B.Tech. or B.E. programme.",
+          "Minimum OGPA: 5.50/10 or equivalent percentage of marks at the Bachelor's degree level."
+        ]
+      },
+      "Doctoral Programme": {
+        "Academic Qualification": "Master's degree in the respective or related subject.",
+        "Minimum OGPA": "6.5/10 or equivalent percentage of marks at the Master's degree level."
+      }
+    },
+    "benefits": {
+      "Fellowship Amount": {
+        "Bachelor's Degree": "INR 12,000 per month for four years.",
+        "Master's Degree": "INR 12,000 per month for two years.",
+        "Ph.D. Programme": "INR 15,000 per month for three years."
+      },
+      "Other Benefits": [
+        "Provision of research contingency grant: INR 6,000/year for M.Sc. and INR 10,000/year for Ph.D.",
+        "Group insurance coverage under consideration.",
+        "Annual bench fee (USD $2000 per year) covered under the India-Afghanistan Fund."
+      ],
+      "Expenditure Coverage": "Tuition fees, hostel fees, mess, medical, and travel within India are covered using the consolidated fellowship amount."
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "farmer",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_69",
+    "title": "Young Interns Program (YIP)",
+    "description": "An internship program by the Government of Rajasthan providing opportunities for youth to gain practical experience in government programs, schemes, and projects.",
+    "eligibility": "Applicants aged 21 to 30 with postgraduate qualifications (minimum 60% marks) or graduates in Engineering, Medical, Law, CA, or CS streams with minimum 60% marks.",
+    "benefits": "₹30,000 per month stipend, ₹2,500 per month for laptop and internet support, 12 casual leaves annually.",
+    "documents": "Photograph, Letter of Intent, Domicile Certificate of Rajasthan, Proof of Age, Educational Qualification Certificates, Proof of Experience (if any), Bank Account Details",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_70",
+    "title": "Technology Development & Utilization Programme for Women (TDUPW)",
+    "description": "A program by DSIR to promote technology development, utilization, and capability building specifically for women.",
+    "eligibility": {
+      "For Projects": [
+        "Studies/surveys for assessing technology-related information needs of women.",
+        "Documentation and content development on technologies beneficial to women, including food processing, water conservation, health, and hygiene.",
+        "Establishing consultancy cells for imparting technical knowledge.",
+        "Awareness creation and training for women in production activities and community management.",
+        "Case studies of successful R&D, technology development, and businesswomen."
+      ],
+      "For Institutions": [
+        "Organizations in the government, non-government, or professional sectors working on women's technology development.",
+        "Institutions receiving annual grants from central/state government agencies, universities, R&D institutions, public sector undertakings, or registered under the Societies Registration Act, Companies Act, or Indian Trusts Act.",
+        "Professional and industry associations."
+      ]
+    },
+    "benefits": {
+      "Duration": "Time-bound projects, typically under two years.",
+      "Quantum of Financial Assistance": [
+        "Financial support (partial or full) for expenses such as manpower, consumables, travel within the country, and miscellaneous expenditures.",
+        "Assistance excludes infrastructure and building costs."
+      ],
+      "Release of Funds": "Released in instalments based on milestones achieved and formalities like progress reports and utilization certificates."
+    },
+    "documents": [
+      "Letter of forwarding the project proposal and undertaking from the institution head.",
+      "Certificate of Responsibility and Commitment from Investigators.",
+      "Technical and financial details of the proposal.",
+      "For non-government institutions: Registration Certificate, Annual Report (last 3 years), Auditor’s Report (last 3 years)."
+    ],
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_71",
+    "title": "Top Class Education For Students With Disabilities",
+    "description": "A scholarship scheme by DoEPwDs for Students with Disabilities (SwDs) pursuing studies beyond class 12th in a full-time course in notified institutions. It aims to support SwDs in pursuing higher education and achieving a dignified place in society.",
+    "eligibility": {
+      "Student": [
+        "Admitted in a full-time course in a notified institution.",
+        "Percentage of disability should be 40% or above.",
+        "Pursuing a Graduate or Post Graduate Degree or Diploma.",
+        "Total annual income of Parent/Guardian should be ≤ ₹6.00 Lakh.",
+        "Not more than two children with disabilities in the same family can avail of the scholarship."
+      ]
+    },
+    "benefits": {
+      "Tuition Fee": "Full tuition fee and non-refundable charges (Ceiling of Rs. 2.00 LPA per student for private institutions).",
+      "Living Expenses": "₹ 3000 per month per student.",
+      "Books and Stationery": "₹ 5000 per annum per student.",
+      "Computer/Laptop": "₹ 30,000 per student (one-time assistance).",
+      "Assistive Devices": "₹ 30,000 per student (one-time reimbursement).",
+      "Special Allowance": "₹ 2000 per month (related to disability types like Reader, Escort, Helper Allowance, etc.)."
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "disabled",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_72",
+    "title": "Innovation In Science Pursuit For Inspired Research (INSPIRE) Fellowship",
+    "description": "The INSPIRE Fellowship is part of the INSPIRE scheme by the Department of Science and Technology (DST), Government of India, aimed at attracting students to pursue doctoral degrees in basic and applied sciences, including engineering, medicine, agriculture, veterinary sciences, and pharmacy.",
+    "eligibility": {
+      "Primary Eligibility": [
+        "1st Rank Holders in any recognized University/Institution in PG level examinations in Basic/Applied Sciences, Engineering, Pharmacy, Agricultural Sciences, Veterinary Sciences.",
+        "1st Rank Holders in Medicine at Graduate/Post-Graduate level conducted by an Indian University/Institution.",
+        "INSPIRE Scholars with at least 70% marks (or CGPA equivalent) in M.Sc./Integrated M.S./M.Sc. or equivalent."
+      ],
+      "Additional Notes": [
+        "Fulfilling eligibility criteria does not guarantee final fellowship award.",
+        "Selection based on academic merit, research proposal, supervisor’s credentials, and host institution."
+      ]
+    },
+    "benefits": {
+      "Duration": "Up to five years from the Effective Date or completion of the Ph.D. program, whichever is earlier.",
+      "HRA": "Applicable as per GoI norms depending on the location of the Host Institute.",
+      "Contingency Expenditure": "₹20,000 per annum with a maximum ceiling of ₹20,000 for the unspent balance adjusted to the next year.",
+      "Internship": "Short-term Research Internship (up to 18 months) at any national or international lab/university/institute during the 5-year tenure.",
+      "Upgradation": "Fellowship can be upgraded from JRF to SRF after 2 years, or 1 year if research paper acceptance is received.",
+      "Payment Mode": "Transferred through PFMS to the student’s host institute’s ZBSA Bank Account, which then transfers the fellowship to the student's account."
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_73",
+    "title": "Pre Matric Scholarship for Students with Disabilities",
+    "description": "This scholarship is for students with disabilities studying in Class 9th or 10th in a government-recognized school. The scheme is aimed at providing financial support to students with disabilities to continue their education and find opportunities for a dignified life.",
+    "eligibility": {
+      "Age & Class": "The applicant must be studying in Class 9th or 10th.",
+      "Disability": "The applicant must have a disability of 40% or more.",
+      "Income Limit": "The total annual income of the parents/guardians should not exceed ₹2.00 Lakh.",
+      "Exclusivity": "The applicant must not be availing of any other government scholarship, and must not be the third sibling receiving this scholarship."
+    },
+    "benefits": {
+      "Maintenance Allowance": {
+        "Day Scholars": "₹500 per month",
+        "Hostellers": "₹800 per month"
+      },
+      "Book Grant": "₹1000 per annum",
+      "Disability Allowances": {
+        "Visually Impaired": "₹4000 per annum",
+        "Hearing Impaired": "₹2000 per annum",
+        "Physically Disabled (OH)": "₹2000 per annum",
+        "Intellectual Disabilities": "₹4000 per annum",
+        "Other Disabilities": "₹2000 per annum"
+      }
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "disabled",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_74",
+    "title": "Prime Minister’s Scholarship Scheme (PMSS) for Railway Protection Force (RPF)",
+    "description": "Introduced by the Hon’ble Prime Minister of India in 2005 and implemented from 2008-09, the PMSS is aimed at encouraging higher technical and professional education for the dependent wards of Ex/Serving RPF/RPSF personnel and widows (below the rank of Gazetted officer).",
+    "eligibility": {
+      "Applicants": "Dependent wards of Ex/Serving RPF/RPSF personnel and widows (below the rank of Gazetted officer).",
+      "Educational Qualification": "Minimum 60% in MEQ (12th Std./Diploma/Graduation).",
+      "Scholarship Limit": "Two wards per family.",
+      "Course Limitations": "Only regular courses from institutes/universities/colleges with AISHE recognition. No distance learning courses.",
+      "Courses Eligible": [
+        "BE/B.Tech",
+        "BDS",
+        "MBBS",
+        "B.Ed",
+        "BBS",
+        "BCA",
+        "MCA",
+        "B. Pharma",
+        "MBA (Master Degree)",
+        "Other Government Recognized Professional Degree Courses"
+      ],
+      "Nationality": "Students studying abroad are not eligible."
+    },
+    "benefits": {
+      "Male Scholarship": "₹2500 per month",
+      "Female Scholarship": "₹3000 per month",
+      "Special Letter": "Letter from the Hon’ble Prime Minister",
+      "Duration": "Two to five years as per the duration of the course"
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_75",
+    "title": "Free Education for Sports Medal Winners / Participants of National/International Events",
+    "description": "This scheme provides financial assistance to medal winners and elite sports persons who participate in national or international sporting events and are studying in full-time regular courses at recognized universities/colleges. The objective is to motivate sports persons to achieve higher levels of performance by assisting them financially for education and sports development.",
+    "eligibility": {
+      "Eligible Candidates": "Medal winners in national games or participants in recognized international sporting events.",
+      "Institutions": [
+        "Universities/Institutions/Colleges under sections 2(f) and 12(b) of the UGC Act, 1956.",
+        "Deemed to be Universities under section 3 of the UGC Act, 1956.",
+        "Universities/Institutions/Colleges funded by Central/State Government.",
+        "Institutes of National Importance."
+      ],
+      "Subsequent Eligibility": "Scholarship eligibility in subsequent years depends on the student’s performance in both sports and academics."
+    },
+    "benefits": {
+      "Olympics/World Championships (more than 20 countries)": {
+        "Tuition Fee and Other Funds": "Actual",
+        "Hostel Facilities": "Actual",
+        "Allowances for Special Courses Abroad": "As per Government of India’s norms",
+        "Kit": "₹15,000 per annum",
+        "Ph.D. and Professional Courses": "₹7,500 per month + Actual"
+      },
+      "Olympics/World Championships (less than 20 countries), Commonwealth, Asian, Afro-Asian Games": {
+        "Tuition Fee and Other Funds": "Actual",
+        "Hostel Facilities": "Actual",
+        "Allowances for Special Courses Abroad": "As per Government of India’s norms",
+        "Kit": "₹10,000 per annum",
+        "Ph.D. and Professional Courses": "₹7,500 per month + Actual"
+      },
+      "Asian Championships, World University Games, SAF Games": {
+        "Tuition Fee and Other Funds": "Actual",
+        "Hostel Facilities": "Actual",
+        "Allowances for Special Courses Abroad": "As per Government of India’s norms",
+        "Kit": "₹7,500 per annum",
+        "Ph.D. and Professional Courses": "₹7,500 per month + Actual"
+      },
+      "National Level Competitions, SAF Games": {
+        "Tuition Fee and Other Funds": "75% of Actual",
+        "Hostel Facilities": "Actual",
+        "Allowances for Special Courses Abroad": "As per Government of India’s norms",
+        "Kit": "₹6,000 per annum",
+        "Ph.D. and Professional Courses": "₹5,000 per month + Actual"
+      }
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_76",
+    "title": "Indian Agricultural Research Institute - Scholarship",
+    "description": "The scholarship provides financial support to students enrolled in M.Sc. and Ph.D. courses at the Indian Agricultural Research Institute (IARI). The awards are based on merit and performance at the Post Graduate School, with a duration of up to two years for M.Sc. students and three years for Ph.D. students. Extensions may be granted in exceptional cases.",
+    "eligibility": {
+      "M.Sc./M.Tech. (Agricultural Engineering)": {
+        "Educational Qualification": "Bachelor's degree under 10+2+4, 10+2+3, or 10+1+4 system. B.Sc. degree under 10+2+2 system prior to 1985."
+      },
+      "Ph.D. Courses": {
+        "Minimum Marks Required": "60% or OGPA of 7.50 out of 10 for General/OBC candidates, 55% or OGPA of 7.00 out of 10 for SC/ST/PC candidates."
+      },
+      "General Eligibility": {
+        "Nationality": "Indian nationals or persons domiciled in India",
+        "Age Limit": "Minimum age for Ph.D. admission: 21 years as of 31st July of the year of admission",
+        "Other Criteria": "Fellows must devote full time to study and cannot hold another paid or unpaid appointment."
+      }
+    },
+    "benefits": {
+      "M.Sc. Scholarship": {
+        "Monthly Stipend": "₹7,560",
+        "Contingent Grant": "₹6,000 per academic year"
+      },
+      "Ph.D. Scholarship": {
+        "Monthly Stipend": "₹10,500",
+        "Contingent Grant": "₹10,000 per academic year"
+      },
+      "In-Service Candidates": {
+        "Stipend Adjustment": "Scholarship amount adjusted to ₹3,000 per month in addition to full leave salary for in-service candidates on study leave."
+      }
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,sc,st,obc"
+  },
+  {
+    "id": "scheme_77",
+    "title": "Scholarship to 2 Years Pre-Service Student Teachers undergoing D.El.Ed Programme at DIETs and CTTC Sohra",
+    "description": "Launched by the Department of Education, Government of Meghalaya in April 2012, this scholarship aims to attract the best talent to pursue teaching as a profession. It provides financial support to students undertaking the D.El.Ed programme at DIETs and CTTC Sohra, with a focus on improving the quality of education in rural areas.",
+    "eligibility": {
+      "Residency": "Permanent resident of Meghalaya.",
+      "Age Limit": "18 to 27 years (Relaxation of 5 years for SC/ST/OBC/PWD candidates).",
+      "Educational Qualifications": {
+        "Class XII": "Passed or equivalent examination with 50% marks (5% relaxation for ST/SC/OBC/PWD).",
+        "Waiting for Results": "Candidates awaiting Class XII results can apply, with the condition to produce provisional/original documents during counseling."
+      },
+      "Other Criteria": "Must be interested in becoming a teacher."
+    },
+    "benefits": {
+      "Scholarship Amount": "₹5000 per month",
+      "Duration": "2 years (10 months per year)"
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,sc,st,obc"
+  },
+  {
+    "id": "scheme_78",
+    "title": "Internship Scheme For PG/Research Students In Directorate General Of Trade Remedies (DGTR)",
+    "description": "The Internship Scheme by the Directorate General of Trade Remedies (DGTR), Department of Commerce, Ministry of Commerce & Industry, provides an opportunity for young scholars, especially from Law/Economics streams, to learn about trade remedial investigations and trade defence measures.",
+    "eligibility": {
+      "Student Status": "Applicants must be Postgraduate Students or Research Scholars from a recognized University/Institute.",
+      "Course Requirement": "The internship must be a part of the applicant's course curriculum (may extend to a semester) or an additional assignment during annual vacations."
+    },
+    "benefits": {
+      "Certificate of Internship": "Interns will receive a certificate after the successful completion of their internship."
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_79",
+    "title": "Internship Scheme of the Department of Economic Affairs",
+    "description": "The Department of Economic Affairs offers an internship program to postgraduate and PhD students specializing in Economics, Law, Finance, and Management. The aim is to familiarize students with the process of formulating economic policies at the macro level and to provide them with an opportunity to research specific economic issues such as macro-economic management, capital markets, inflation management, and fiscal policy.",
+    "eligibility": "The program is open to outstanding candidates pursuing Post Graduation or PhD in Economics, Law, Finance, or Management from universities or institutions ranked within the top 25 according to the National Institutional Ranking Framework (NIRF) or from QS-ranked international universities.",
+    "benefits": {
+      "Remuneration": "A token remuneration of ₹10,000 per month for postgraduate students and ₹20,000 per month for PhD students is provided on satisfactory completion of the internship and submission of the final report/paper.",
+      "Logistics Support": "Interns are provided with necessary office space, computer facilities, and internet access to assist in their research and work.",
+      "Certificate": "A Certificate of Internship is issued to interns on the successful completion of the internship, which includes submission of a report/paper, feedback, and attendance certified by the Divisional Head."
+    },
+    "documents": [
+      "Passport-sized photograph",
+      "Proof of identity (e.g., Aadhar card or passport)",
+      "Proof of address (e.g., utility bill or bank statement)",
+      "Proof of the latest educational qualification (degree, mark sheets)",
+      "Identity card or proof of enrolment in the postgraduate or PhD program",
+      "Letter of recommendation from the institution",
+      "Bank account details for payment of stipend"
+    ],
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_80",
+    "title": "ICAR - Post Matric Scholarship For Scheduled Caste / Scheduled Tribes Candidates",
+    "description": "The Post-Matric Scholarship scheme by the Indian Council of Agricultural Research (ICAR) aims to support students from Scheduled Castes (SC) and Scheduled Tribes (ST) communities to pursue undergraduate courses in Agriculture and Allied Sciences. The scholarship helps these students complete their Bachelor's Degree programs, including B.Sc.(Agri.), B.V.Sc., B.Sc.(Agril. Engg.), and more.",
+    "eligibility": "The scholarship is exclusively for SC/ST students, as defined by the Government of India, who have been admitted to Agricultural Universities for any undergraduate degree program in Agriculture and Allied Sciences.",
+    "benefits": {
+      "Scholarship Amount": "₹1,000 per month",
+      "Contingent Grant": "₹750 per annum for tuition fees, purchase of books, uniforms, etc.",
+      "Duration": "The scholarship covers the entire normal duration of the specific degree program."
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student,farmer",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_81",
+    "title": "Pre-Matric Scholarship",
+    "description": "The Pre-Matric Scholarship scheme aims to improve the educational status of students from Other Backward Classes (OBC) in Uttar Pradesh. The scheme provides financial support to OBC students studying in government schools, aided, and recognized educational institutes to encourage their education and reduce dropout rates.",
+    "eligibility": "The applicant must be a native of Uttar Pradesh, with an annual income of their parents/guardians up to ₹2 Lakh. The student must be enrolled in government schools, aided, or recognized educational institutes, subject to budget availability.",
+    "benefits": {
+      "Monthly Scholarship": "₹150 per month for a maximum of 10 months",
+      "Annual Grant": "₹750 as an ad-hoc grant in one go"
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 200000,
+    "occupation": "student",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_82",
+    "title": "MeitY - Visvesvaraya PhD Scheme For Electronics & IT",
+    "description": "A scholarship scheme by the Ministry of Electronics and Information Technology to enhance the number of PhDs in Electronics System Design & Manufacturing (ESDM) and IT/ITES sectors in the country.",
+    "eligibility": "Applicants must have a minimum Grade Point Average of 6.5/10 or 60% in M.E./M.Tech./M.S. or equivalent in relevant fields, or a Bachelor's degree with a valid GATE score or equivalent.",
+    "benefits": {
+      "Full-Time Ph.D. Candidates": {
+        "Fellowship": "₹31,500/month (I & II years); ₹35,000/month (III to V year), revised to ₹38,750/month (I & II years); ₹43,750/month (III to V year)",
+        "Annual Contingency Grant": "₹30,000/year for research-related expenses",
+        "Rent Reimbursement": "Up to 30%, 20%, or 10% of the fellowship for different city classifications (X, Y, Z cities)",
+        "International Conference Support": "Up to ₹50,000 for attending 2 conferences"
+      },
+      "Part-Time Ph.D. Candidates": {
+        "Incentive": "₹2,50,000 on successful completion of the Ph.D."
+      },
+      "Young Faculty Research Fellowship (YFRF)": {
+        "Fellowship": "₹20,000/month in addition to regular income",
+        "Contingency/Research Grant": "₹5,00,000/year for research expenses and conference support"
+      }
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_83",
+    "title": "Pre-Matric Scholarships to the Children of Those Engaged in Occupations Involving Cleaning and Prone to Health Hazards",
+    "description": "A scholarship scheme by the Department of Social Justice and Empowerment, Ministry of Social Justice and Empowerment, to provide financial assistance to children whose parents/guardians are engaged in hazardous occupations such as tanners, flayers, waste pickers, and manual scavengers.",
+    "eligibility": {
+      "Categories": [
+        "Tanners & Flayers",
+        "Waste Pickers",
+        "Persons engaged in Manual Scavenging (under the Manual Scavengers Act, 2013)",
+        "Persons engaged in hazardous cleaning (under the Manual Scavengers Act, 2013)"
+      ],
+      "Conditions": "Children must not be employed or assist in parents' work during studies. The scholarship will be discontinued if the student fails to secure annual promotion or violates school discipline."
+    },
+    "benefits": {
+      "Rate of Scholarship": {
+        "Day Scholars": "₹ 110 per month (Class 1st to 10th) for 10 months",
+        "Hostellers": "₹ 700 per month (Class 3rd to 10th) for 10 months"
+      },
+      "Ad-Hoc Grant": {
+        "Day Scholars": "₹ 750 per annum",
+        "Hostellers": "₹ 1000 per annum"
+      },
+      "Additional Provisions for Students with Disabilities": {
+        "Reader Allowance": "₹ 100 per month for blind students (Classes III and X)",
+        "Transport Allowance": "₹ 50 per month for disabled students not residing in hostels",
+        "Special Pay": "₹ 100 per month to a helper for severely handicapped students",
+        "Escort Allowance": "₹ 50 per month for severely handicapped day scholars",
+        "Extra Coaching Allowance": "₹ 100 per month for mentally retarded/mentally ill students (Classes III and X)"
+      }
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_84",
+    "title": "Central Sector Scheme of National Fellowship for Providing Fellowship to Scheduled Caste Students to Pursue M.Phil. & PhD",
+    "description": "The fellowship scheme was launched in 2005-06 by the Ministry of Social Justice & Empowerment to provide financial assistance to Scheduled Caste (SC) students pursuing M.Phil or Ph.D. in Sciences, Humanities, or Social Sciences from recognized Indian universities.",
+    "eligibility": {
+      "1": "Applicant must belong to the Scheduled Caste (SC) category.",
+      "2": "Applicant must be pursuing regular and full-time advanced studies/research leading to an M.Phil/PhD degree.",
+      "3": "Applicant must have qualified one of the following tests: National Eligibility Test - Junior Research Fellowship (NET - JRF) or UGC-CSIR NET-JRF Joint Test.",
+      "4": "Applicant must be enrolled in a University/Institution recognized by UGC under Section 2(f) or Section 3 of the UGC Act, 1956.",
+      "5": "The applicant is eligible for only one fellowship at a time and must not accept any other monetary benefit/scholarship/fellowship from any other source."
+    },
+    "benefits": {
+      "Number of Slots": {
+        "Total Fellowships": "2000 new fellowships per year",
+        "Breakdown": "1500 Junior Research Fellowships (JRF) for Humanities/Social Sciences and 500 JRF for Science stream"
+      },
+      "Fellowship Rates": {
+        "JRF": "₹31,000 per month for the first two years",
+        "SRF": "₹35,000 per month for the remaining tenure"
+      },
+      "Contingency Allowance": {
+        "Humanities/Social Sciences": "₹10,000 per annum for JRF and ₹20,500 per annum for SRF",
+        "Science": "₹12,000 per annum for JRF and ₹25,000 per annum for SRF"
+      },
+      "Escort/Reader Assistance": "₹2,000 per month for physically and visually handicapped candidates, applicable for both JRF and SRF",
+      "House Rent Allowance (HRA)": "8%, 16%, or 24% depending on the location of the research work, for students not provided with hostel accommodation."
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_85",
+    "title": "NPC Students Internship Program",
+    "description": "The National Productivity Council (NPC) offers internship training to undergraduate and postgraduate students, providing exposure to various interventions and IT-enabled activities undertaken by NPC. This program helps students apply their academic knowledge in real-world scenarios, develop new skills, and gain deeper insights into industrial and technological processes.",
+    "eligibility": {
+      "1": "The applicant must be an Indian citizen.",
+      "2": "The applicant must not have already applied for the internship in the current financial year.",
+      "3": "The applicant must be pursuing graduation or post-graduation studies."
+    },
+    "benefits": {
+      "Certificate": "Interns will receive an internship completion certificate after submitting the full project report.",
+      "Logistics & Support": "NPC provides working space, internet facilities, and necessary support. Interns must bring their own laptops.",
+      "Boarding & Lodging": "Interns are responsible for their own transportation and accommodation.",
+      "Remuneration": "No financial remuneration or stipend is provided."
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_86",
+    "title": "Department of Expenditure Internship Programme",
+    "description": "The Department of Expenditure offers an internship program for undergraduates, postgraduates, and research scholars to familiarize them with the process of formulating economic policies of the Government of India. This is not a job or a guarantee for a job in the Department.",
+    "eligibility": {
+      "General Criteria": [
+        "Indian nationals",
+        "Postgraduates in Economics, Finance, Management, or students in the 4th and 5th years of a 5-year integrated Law course or other professional courses."
+      ],
+      "Specific Criteria": [
+        "Postgraduate students must have a first-class graduate degree.",
+        "Research students must have at least 50% marks in Post-Graduation.",
+        "Students in the 4th or 5th year of the 5-year integrated Law course must have at least 80% marks in their 12th-grade examination."
+      ]
+    },
+    "benefits": {
+      "Remuneration": "₹10,000 per month, payable on completion of the internship and submission of a report/paper.",
+      "Certificate": "Interns will receive a certificate of internship after successful completion and submission of their report/paper."
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_87",
+    "title": "Maulana Azad National Fellowship For Minority Students",
+    "description": "The Maulana Azad National Fellowship for Minority Students was launched in 2009 by the Ministry of Minority Affairs to provide financial aid to students from minority communities to pursue M. Phil and Ph.D. courses at recognized institutions. The fellowship aims to support students from minority communities to further their academic research and higher studies in various fields.",
+    "eligibility": "Students from minority communities (Buddhist, Christian, Jain, Muslim, Sikh, or Zoroastrian) who have qualified for the UGC-NET or Joint CSIR-UGC NET examination. The fellowship is available only for students who have not availed of any fellowship earlier. Employees of any educational institution or government are not eligible.",
+    "benefits": "The fellowship provides a stipend of ₹31,000 per month for Junior Research Fellowship (JRF) for the first two years, and ₹35,000 per month for Senior Research Fellowship (SRF) for the remaining tenure. Additionally, contingency grants for different streams (Humanities, Social Science, Science, Engineering & Technology) are provided, along with ₹2,000 per month for physically and visually handicapped candidates for escort/reader assistance.",
+    "documents": "1. UGC-NET/CSIR-UGC NET Certificate. 2. Continuation Certificate (submitted every three months). 3. Progress Report (submitted after one year of the fellowship). 4. Contingency Grant Account for eligible expenses. 5. HRA Certificate (if applicable). 6. Passport-sized photograph. 7. Write-up (not exceeding 500 words) explaining how the fellowship will contribute to the student's career growth.",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,st,minority"
+  },
+  {
+    "id": "scheme_88",
+    "title": "Innovation In Science Pursuit For Inspired Research (INSPIRE) - Scholarship For Higher Education (SHE)",
+    "description": "The INSPIRE Scholarship for Higher Education (SHE) aims to attract students to pursue basic and natural science courses at the undergraduate and postgraduate levels and promote research careers in these fields. The scheme provides scholarships to meritorious students to study in the disciplines of Physics, Chemistry, Biology, Mathematics, and more, under the Department of Science and Technology (DST), Government of India.",
+    "eligibility": "Meritorious students with top 1% marks in their Class XII examination or top ranks in JEE, AIPMT, NTSE, KVPY, and other science-related competitions. The student must be pursuing B.Sc., B.S., Int. M.Sc./Int. M.S. in Basic and Natural Sciences at recognized institutions in India.",
+    "benefits": "The scholarship provides ₹80,000 per annum, ₹60,000 as a monthly scholarship of ₹5,000 and ₹20,000 as a summer research project grant. The scholarship is transferred directly to the student's SBI account. Students must also undertake a summer research project at a recognized research center.",
+    "documents": "1. Class XII Mark Sheet. 2. JEE, AIPMT, NTSE, KVPY, or other competition rank (if applicable). 3. Performance Report from the current institution. 4. Scanned copy of the first page of SBI passbook for bank account details. 5. Any additional certificates supporting eligibility.",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_89",
+    "title": "Long Term Fellowship under the Human Resource Development Programme for Health Research",
+    "description": "The Long Term Fellowship under the Human Resource Development Programme for Health Research aims to provide advanced training to medical and health research personnel in cutting-edge research areas related to health and medicine. The fellowship targets the creation of a skilled workforce for health research in India, with training opportunities both within India and abroad in priority health research areas.",
+    "eligibility": "Indian citizens working in Indian institutes with at least three years of experience as regular faculty. Applicants should have an M.D./M.S./M.D.S. or equivalent degree like MBBS/BDS/MVSc./M.Sc./M.Pharma/M.Tech or Ph.D. in health/medical research. The applicant should be below 45 years of age and should not have availed any government fellowship of one month or more for the same research area.",
+    "benefits": {
+      "Long-Term Fellowship in Indian Institutes": {
+        "Stipend": "₹40,000 per month (₹20,000 if training is at the same station)",
+        "Contingency Grant": "₹30,000 maximum for local travel and ₹20,000 for attending progress review meetings at DHR",
+        "Travel": "As per T.A. rules of the parent organization"
+      },
+      "Long-Term Fellowship Abroad": {
+        "Stipend": "US $3000 per month (or equivalent in other currency)",
+        "Air Travel": "Cost of air passage in economy class from parent institute to host institute",
+        "Contingency Grant": "₹50,000 maximum for local expenses, visa, insurance, and ₹20,000 for attending progress review meetings",
+        "Conference Grant": "US $600 for up to 6 months or US $1200 for 6-12 months for attending conferences"
+      }
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_90",
+    "title": "Junior Research Fellowship in Engineering & Technology",
+    "description": "The Junior Research Fellowship (JRF) in Engineering & Technology, offered by the University Grants Commission (UGC), is designed for candidates who wish to pursue research leading to a Ph.D. in engineering and technology. This fellowship provides opportunities for M.Pharma, M.E., and M.Tech students through direct interviews conducted by the UGC, as there is no NET examination in these fields.",
+    "eligibility": {
+      "Qualifications": "Candidates must hold an M.E./M.Tech. degree or equivalent with at least 55% marks. GATE is not mandatory for applying for this fellowship.",
+      "Age Limit": "The age limit is 40 years as of 1st July of the award year, extendable by five years for women and SC/ST candidates.",
+      "Reservations": "22.5% of fellowships are reserved for SC/ST candidates who fulfill the qualifications. If SC/ST candidates are unavailable, the slots will be made available to general candidates."
+    },
+    "benefits": {
+      "Fellowship": {
+        "JRF": "₹14,000 per month for the first two years",
+        "SRF": "₹15,000 per month for the remaining period after satisfactory evaluation",
+        "Contingency": {
+          "JRF": "₹12,000 per annum for the first two years",
+          "SRF": "₹25,000 per annum for the remaining period"
+        },
+        "Departmental Assistance": "₹3,000 per annum to the host institute for infrastructure support",
+        "Escorts/Reader Assistance": "₹2,000 per month for physically handicapped and blind candidates",
+        "House Rent Allowance (HRA)": "As per institutional rules or reimbursement if accommodation is not provided"
+      },
+      "Medical Assistance": "No fixed medical assistance is provided. Fellows may avail medical facilities available at the institution.",
+      "Leave": {
+        "Leave Entitlement": "30 days per year plus public holidays. Additional leave provisions for women candidates (maternity leave of 135 days).",
+        "Leave Without Fellowship": "Up to one year for teaching assignments or up to three months in other cases."
+      }
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_91",
+    "title": "National Renewable Energy Internship (NREI) Scheme",
+    "description": "The NREI Scheme by the Ministry of New and Renewable Energy (MNRE) offers internship opportunities for students and professionals to gain experience in the renewable energy sector. The scheme is open to students pursuing undergraduate, graduate, or post-graduate degrees or research scholars in recognized institutions within India or abroad, with a focus on renewable energy.",
+    "eligibility": {
+      "Qualifications": "Applicants must be pursuing a graduate or post-graduate degree in Engineering, Management, Law, Science, or Renewable Energy from a recognized institution within India or abroad, or be working in the Renewable Energy field.",
+      "Additional Notes": "MNRE may relax eligibility criteria for deserving candidates."
+    },
+    "benefits": {
+      "Stipend": "₹15,000 per month for physical internships only. No stipend for virtual internships.",
+      "Certificate": "Certificates will be issued upon satisfactory completion of the internship and evaluation of the report/paper.",
+      "Logistics Support": "Internet facilities and other necessities for physical internships. Interns must have their own laptops and make their own lodging and boarding arrangements."
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_92",
+    "title": "Dr. S. Radhakrishnan UGC Post-Doctoral Fellowship",
+    "description": "The Dr. S. Radhakrishnan UGC Post-Doctoral Fellowship is provided by the University Grants Commission (UGC) to support post-doctoral research in various disciplines including Sciences, Engineering, Technology, Humanities, Social Sciences, and Languages at Indian Universities/Institutions.",
+    "eligibility": {
+      "Candidate Eligibility": {
+        "PhD Requirement": "Unemployed candidates with a Ph.D. degree in relevant fields (Sciences, Engineering, Technology, Humanities, Social Sciences, including Languages).",
+        "Age Limit": "Below 35 years (with relaxation of 5 years for SC/ST/OBC (Non-Creamy Layer)/Women/PWD/Transgender).",
+        "Other Fellowship": "Candidates availing other fellowships/remuneration must resign from them before accepting the UGC fellowship.",
+        "Academic Requirement": "Minimum 55% marks at the postgraduate level (5% relaxation for reserved categories).",
+        "Mentor Requirement": "Candidates must identify a mentor at a recognized institution and obtain consent."
+      },
+      "Mentor Eligibility": {
+        "Faculty Status": "Mentor must be a regular faculty at Associate Professor level or above.",
+        "PhD Requirement": "Mentor must have a Ph.D. degree.",
+        "Experience": "Mentor must have supervised at least 3 Ph.D. theses."
+      },
+      "Research Center Eligibility": {
+        "Institution Types": [
+          "Universities under section 2(f) of UGC Act, 1956 with valid NAAC accreditation.",
+          "Deemed Universities under section 3 of UGC Act, 1956 with valid NAAC accreditation.",
+          "Central/State Government funded institutions authorized to award degrees.",
+          "Institutions of National Importance."
+        ]
+      }
+    },
+    "benefits": "",
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,sc,st,obc"
+  },
+  {
+    "id": "scheme_93",
+    "title": "Padho Pardesh Scheme",
+    "description": "The Padho Pardesh scheme provides interest subsidies to meritorious minority students pursuing master's, M.Phil, or Ph.D. degrees abroad. It aims to support economically weaker students from notified minority communities in accessing higher education opportunities abroad and enhancing employability.",
+    "eligibility": {
+      "Admission Requirement": "Must be admitted to an approved master's, M.Phil, or Ph.D. program abroad in a recognized university/institution.",
+      "Income Limit": "Family income must not exceed ₹6,00,000 per annum.",
+      "Loan Requirement": "Must have obtained an education loan from a scheduled bank under the Indian Banks Association (IBA) Education Loan Scheme.",
+      "Application Timeframe": "Application must be made during the first year of study (applications received in the second year or later will not be accepted).",
+      "Priority": "Priority given to applications from states and union territories with lower bank interest rates.",
+      "Aadhaar Linking": "Payment of financial benefits may be linked to the student's Aadhaar number."
+    },
+    "benefits": {
+      "Financial Assistance": "Interest subsidy on education loans to reduce the cost of overseas education.",
+      "Access to Education": "Makes overseas education more accessible to minority students from economically weaker sections.",
+      "Improved Employability": "Studying abroad provides a competitive edge in the global job market.",
+      "Personal and Professional Development": "Studying abroad enhances students' skills and knowledge in a global context."
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_94",
+    "title": "Free Coaching Scheme for SC and OBC Students",
+    "description": "This scheme, implemented by the Department of Social Justice and Empowerment in collaboration with Dr. Ambedkar Foundation (DAF), aims to provide quality coaching to economically disadvantaged SC and OBC students for competitive examinations, thereby enhancing their chances of securing public/private sector jobs or admission to reputed technical and professional higher education institutions.",
+    "eligibility": {
+      "Student Criteria": {
+        "Category": "SC or OBC",
+        "Income": "Annual family income should be ₹8,00,000 or less",
+        "Education": {
+          "For Class 12th Based Exams": "Should have passed class 12th or be studying in class 12th",
+          "For Under Graduate Based Exams": "Should have completed or be in the final year of an undergraduate course"
+        },
+        "Benefits Limit": "A student can avail the benefits up to two times, irrespective of the number of attempts for exams."
+      },
+      "University Criteria": {
+        "Seats Allocation": "Maximum of 100 seats per Central University, with a minimum of 50 students per university for viability.",
+        "Courses Allocation": "Each university can offer a maximum of 4 courses, with at least 25 students per course."
+      },
+      "Exclusions": [
+        "Students with less than 50% marks in Class 10th (for 12th-based exams) or Class 12th (for undergrad-based exams) are not eligible."
+      ]
+    },
+    "benefits": {
+      "Stipend": "₹4000 per month for the duration of the course (up to 12 months)",
+      "Incentive": "₹15,000 for successful students who clear the mains stage of Central/State Civil Services Exams (Class 1 and Class 2 posts)."
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 800000,
+    "occupation": "student",
+    "other": "",
+    "category": "general,sc,st,obc"
+  },
+  {
+    "id": "scheme_95",
+    "title": "PM-YASASVI: Top Class School Education for OBC, EBC and DNT Students",
+    "description": "A sub-scheme under PM Young Achievers Scholarship Award Scheme (PM-YASASVI), launched by the Ministry of Social Justice & Empowerment to provide educational assistance to meritorious students from OBC, EBC, and DNT categories for studying in top-class schools from Class 9 to Class 12.",
+    "eligibility": {
+      "Student Criteria": {
+        "Categories": "OBC, EBC, DNT",
+        "Income": "Household income must be less than ₹2.5 Lakhs",
+        "Merit": "Must be studying in a top-class school from Class 9 to Class 12"
+      },
+      "School Criteria": {
+        "Aadhaar-Based Attendance": "Schools must integrate Aadhaar-based attendance system if required."
+      },
+      "Exclusions": "Students receiving benefits under any other government scheme for similar items will not be eligible."
+    },
+    "benefits": {
+      "Scholarship Amount": {
+        "Class 9 and 10": "Up to ₹75,000 per annum",
+        "Class 11 and 12": "Up to ₹1,25,000 per annum"
+      },
+      "Covered Expenses": "Tuition fee, hostel fee, and other charges as required by the school",
+      "Payment Mode": "Direct Bank Transfer (DBT)",
+      "Installments": "Payment released in installments before 15th August each year."
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,sc,st,obc"
+  },
+  {
+    "id": "scheme_96",
+    "title": "Student Internship Program",
+    "description": "A learning opportunity for students to gain exposure to the functioning of the CAG of India. Interns will be engaged on a contract basis for 3 to 6 months in Regional Capacity Building and Knowledge Institutes.",
+    "eligibility": {
+      "Minimum Age": "Not more than 25 years",
+      "Academic Qualification": "Undergraduate, Postgraduate, or Research students from recognized institutions with a stellar academic record",
+      "Preferred Attributes": [
+        "Skills in Information Technology (IT) & Information Communication Technology (ICT)",
+        "Good communication and interpersonal skills"
+      ],
+      "Other Requirements": [
+        "Must sign a Secrecy and Non-Disclosure Agreement before reporting for the internship",
+        "Must comply with the laws of secrecy of the country",
+        "Shall not be entitled to leave during the internship period"
+      ]
+    },
+    "benefits": {
+      "Remuneration": "₹12,000/- per month (all-inclusive), paid on completion of the internship and submission of Report/Paper",
+      "Logistics Support": "Office space, computer with internet access",
+      "Outplacement": "Experience Certificate / Recommendatory letter upon successful completion"
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,sc,st"
+  },
+  {
+    "id": "scheme_97",
+    "title": "Internship Programme at Serious Fraud Investigation Office",
+    "description": "The SFIO Internship Programme aims to provide a platform for young scholars and researchers from reputed academic institutions in fields like Economics, Commerce, Law, Management, Computer Forensics, and professional courses from ICAI, CMA, and ICSI. Interns will gain hands-on experience and interact with officers of SFIO, including its Regional Offices.",
+    "eligibility": {
+      "National": "The applicant must be an Indian National",
+      "Academic Qualifications": [
+        "Post Graduate Courses - MBA (Finance), Law Students in 4th/5th Year of a five-year stream with excellent academic records",
+        "Post-graduation with at least 55% marks in graduation, pursuing Masters/Research in Economics/Finance/Management/Law/Computer Forensics from recognized universities",
+        "Students in the final year or equivalent of ICAI, ICAI(CMA), ICSI, Central Universities, AICTE recognized financial/Economic Institutions, National Management Institutes, Foreign Universities and Institutions of Excellence",
+        "For Graduate Applicants - Must have secured First Class Degree in Graduation"
+      ]
+    },
+    "benefits": {
+      "Stipend": "₹7,000/- per month during the internship period",
+      "Certificate of Internship": "Certificate awarded upon satisfactory completion and submission of an end-of-assignment report, evaluated by the concerned official of SFIO"
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "student",
+    "other": "",
+    "category": "general,st"
+  },
+  {
+    "id": "scheme_98",
+    "title": "Merit Cum Means Based Scholarship For Students Belonging To The Minority Communities",
+    "description": "A scholarship scheme by the Ministry of Minority Affairs for students from minority communities pursuing technical and professional courses at undergraduate and postgraduate levels in listed institutes. The scholarship aims to lighten the financial burden on education for minority communities and provide a level playing field in the competitive employment arena.",
+    "eligibility": {
+      "Community": "The applicant must belong to a Minority Community",
+      "Course": "The applicant must be pursuing a technical or professional course at the undergraduate or postgraduate level",
+      "Marks": "The applicant must have secured not less than 50% marks (or equivalent grade) in the previous final examination",
+      "Income": "The annual income of the parents/guardians of the applicant from all sources must be less than or equal to ₹2.5 Lakhs per annum"
+    },
+    "benefits": {
+      "Course Fee": "₹20,000/- per annum, subject to actuals (whichever is less) for both Hosteller & Day Scholar",
+      "Monthly Maintenance Allowance": {
+        "Hosteller": "₹1,000/- for 10 months in an academic year",
+        "Day Scholar": "₹500/- for 10 months in an academic year"
+      },
+      "Scholarship for Listed Institutes": "Full course fee reimbursed for listed institutes"
+    },
+    "documents": "",
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 999999,
+    "occupation": "general",
+    "other": "",
+    "category": "general,st,minority"
+  },
+  {
+    "id": "scheme_99",
+    "title": "Post Matric Scholarship Scheme for Scheduled Tribe Students",
+    "description": "A centrally sponsored scholarship scheme by the Ministry of Tribal Affairs for ST students pursuing post-matriculation or post-secondary courses in India.",
+    "eligibility": "Scheduled Tribe students who have passed Matriculation or Higher Secondary examinations or equivalent, and whose parents’/guardians’ combined annual income does not exceed ₹2,00,000.",
+    "benefits": {
+      "Hostellers": {
+        "Bachelor, Master, MPhil/PhD, Professional Courses": "₹1,200 per month",
+        "Non-professional Courses (e.g., BA/B.Sc/B.Com)": "₹820 per month",
+        "Vocational/ITI/Polytechnic": "₹570 per month",
+        "Post-Matriculation (Class XI and XII)": "₹380 per month"
+      },
+      "Day Scholars": {
+        "Bachelor, Master, MPhil/PhD, Professional Courses": "₹500 per month",
+        "Non-professional Courses (e.g., BA/B.Sc/B.Com)": "₹530 per month",
+        "Vocational/ITI/Polytechnic": "₹300 per month",
+        "Post-Matriculation (Class XI and XII)": "₹230 per month"
+      },
+      "Disability Allowance": {
+        "Hostellers": "₹800 per month (₹9,600 annually)",
+        "Day Scholars": "₹600 per month (₹7,200 annually)"
+      }
+    },
+    "documents": [
+      "Application Form (fresh or renewal)",
+      "Passport-size photograph",
+      "Certificates of examinations passed (Diplomas, Degrees, etc.)",
+      "Caste Certificate (signed by Revenue Officer, not below Tahsildar)",
+      "Income Declaration (affidavit for self-employed or income certificate for employed parents)",
+      "Receipt of last year’s scholarship (for renewal)"
+    ],
+    "state": "central",
+    "ministry": "",
+    "apply_url": "https://myscheme.gov.in",
+    "income_limit": 200000,
+    "occupation": "student",
+    "other": "",
+    "category": "general,sc,st"
+  }
+,
+  {
+    "id": "scheme_100",
+    "title": "Post Matric Scholarship Scheme for Scheduled Caste Students",
+    "description": "A centrally sponsored scholarship scheme by the Ministry of Social Justice and Empowerment for SC students pursuing post-matriculation or post-secondary courses in India.",
+    "eligibility": "Scheduled Caste students who have passed Matriculation or Higher Secondary examinations or equivalent, and whose parents'/guardians' combined annual income does not exceed ₹2,50,000.",
+    "benefits": {
+      "Hostellers": {
+        "Bachelor, Master, MPhil/PhD, Professional Courses": "₹1,200 per month",
+        "Non-professional Courses (e.g., BA/B.Sc/B.Com)": "₹820 per month",
+        "Vocational/ITI/Polytechnic": "₹570 per month",
+        "Post-Matriculation (Class XI and XII)": "₹380 per month"
+      },
+      "Day Scholars": {
+        "Bachelor, Master, MPhil/PhD, Professional Courses": "₹550 per month",
+        "Non-professional Courses (e.g., BA/B.Sc/B.Com)": "₹530 per month",
+        "Vocational/ITI/Polytechnic": "₹300 per month",
+        "Post-Matriculation (Class XI and XII)": "₹230 per month"
+      },
+      "Disability Allowance": {
+        "Hostellers": "₹800 per month (₹9,600 annually)",
+        "Day Scholars": "₹600 per month (₹7,200 annually)"
+      }
+    },
+    "documents": [
+      "Application Form (fresh or renewal)",
+      "Passport-size photograph",
+      "Certificates of examinations passed (Diplomas, Degrees, etc.)",
+      "Caste Certificate (signed by Revenue Officer, not below Tahsildar)",
+      "Income Declaration (affidavit for self-employed or income certificate for employed parents)",
+      "Receipt of last year's scholarship (for renewal)",
+      "Bank Account Passbook (Aadhaar-linked)"
+    ],
+    "state": "central",
+    "ministry": "Ministry of Social Justice and Empowerment",
+    "apply_url": "https://scholarships.gov.in",
+    "income_limit": 250000,
+    "occupation": "student",
+    "other": "",
+    "category": "sc"
+  },
+  {
+    "id": "scheme_101",
+    "title": "Post Matric Scholarship Scheme for OBC Students",
+    "description": "A centrally sponsored scholarship scheme by the Ministry of Social Justice and Empowerment for Other Backward Class (OBC) students pursuing post-matriculation studies.",
+    "eligibility": "OBC students who have passed Matriculation and are studying in post-matric classes (XI onwards), with parental/guardian annual income not exceeding ₹1,50,000.",
+    "benefits": {
+      "Hostellers": {
+        "Bachelor, Master, MPhil/PhD, Professional Courses": "₹1,000 per month",
+        "Non-professional Courses (e.g., BA/B.Sc/B.Com)": "₹750 per month",
+        "Vocational/ITI/Polytechnic": "₹500 per month",
+        "Post-Matriculation (Class XI and XII)": "₹350 per month"
+      },
+      "Day Scholars": {
+        "Bachelor, Master, MPhil/PhD, Professional Courses": "₹550 per month",
+        "Non-professional Courses (e.g., BA/B.Sc/B.Com)": "₹350 per month",
+        "Vocational/ITI/Polytechnic": "₹230 per month",
+        "Post-Matriculation (Class XI and XII)": "₹150 per month"
+      },
+      "Disability Allowance": {
+        "Hostellers": "₹800 per month (₹9,600 annually)",
+        "Day Scholars": "₹600 per month (₹7,200 annually)"
+      }
+    },
+    "documents": [
+      "Application Form (fresh or renewal)",
+      "Passport-size photograph",
+      "Certificates of examinations passed",
+      "OBC/Non-Creamy Layer Certificate (issued within the validity period prescribed by the state)",
+      "Income Declaration/Certificate",
+      "Receipt of last year's scholarship (for renewal)",
+      "Bank Account Passbook (Aadhaar-linked)"
+    ],
+    "state": "central",
+    "ministry": "Ministry of Social Justice and Empowerment",
+    "apply_url": "https://scholarships.gov.in",
+    "income_limit": 150000,
+    "occupation": "student",
+    "other": "",
+    "category": "obc"
+  },
+  {
+    "id": "scheme_102",
+    "title": "National Means-cum-Merit Scholarship Scheme (NMMSS)",
+    "description": "A central scheme by the Ministry of Education to award scholarships to meritorious students from economically weaker sections to reduce dropout rates at the Class VIII to XII stage.",
+    "eligibility": "Students who have passed Class VII/VIII from a government, government-aided, or local body school, secured minimum qualifying marks in the selection test, and whose parental income does not exceed ₹3,50,000 per annum.",
+    "benefits": {
+      "All Eligible Students": {
+        "Scholarship Amount": "₹12,000 per annum (₹1,000 per month), disbursed directly to student's bank account"
+      }
+    },
+    "documents": [
+      "Application Form",
+      "Passport-size photograph",
+      "Class VII/VIII mark sheet",
+      "Income Certificate issued by competent authority",
+      "Caste Certificate (if applicable)",
+      "Bank Account Passbook (Aadhaar-linked)",
+      "School Certificate confirming enrollment in government/aided school"
+    ],
+    "state": "central",
+    "ministry": "Ministry of Education",
+    "apply_url": "https://scholarships.gov.in",
+    "income_limit": 350000,
+    "occupation": "student",
+    "other": "Selection based on a state-level Talent Search Examination combining a Mental Ability Test (MAT) and Scholastic Aptitude Test (SAT)",
+    "category": "general,sc,st,obc"
+  },
+  {
+    "id": "scheme_103",
+    "title": "Post Matric Scholarship Scheme for Minorities",
+    "description": "A central scheme by the Ministry of Minority Affairs to provide financial assistance to students from notified minority communities (Muslims, Christians, Sikhs, Buddhists, Parsis, Jains) for post-matriculation studies.",
+    "eligibility": "Students belonging to notified minority communities who have passed the previous final examination and are enrolled in a recognized post-matric course, with total family/parental income not exceeding ₹2,00,000 per annum.",
+    "benefits": {
+      "Hostellers": {
+        "Courses of higher education for professional and technical courses at the graduate/post-graduate level": "₹10,000 per annum (admission/tuition fee) + ₹1,200 maintenance per month",
+        "Non-professional courses": "₹5,000 per annum (admission/tuition fee) + ₹820 maintenance per month"
+      },
+      "Day Scholars": {
+        "Professional/technical courses": "₹10,000 per annum (admission/tuition fee) + ₹550 maintenance per month",
+        "Non-professional courses": "₹5,000 per annum (admission/tuition fee) + ₹300 maintenance per month"
+      }
+    },
+    "documents": [
+      "Application Form (fresh or renewal)",
+      "Passport-size photograph",
+      "Mark sheet of previous qualifying examination",
+      "Minority Community Certificate/Self-declaration as per notified format",
+      "Income Certificate issued by competent authority",
+      "Bonafide/Fee Receipt from institution",
+      "Bank Account Passbook (Aadhaar-linked)"
+    ],
+    "state": "central",
+    "ministry": "Ministry of Minority Affairs",
+    "apply_url": "https://scholarships.gov.in",
+    "income_limit": 200000,
+    "occupation": "student",
+    "other": "Applicant must not be a beneficiary of any other central/state scholarship for the same purpose",
+    "category": "minority"
+  },
+  {
+    "id": "scheme_104",
+    "title": "Top Class Education Scheme for Scheduled Tribe Students",
+    "description": "A central scheme by the Ministry of Tribal Affairs to recognize and promote quality education among ST students by providing full financial support for studies in identified premier institutions across India.",
+    "eligibility": "ST students who have secured admission in one of the listed premier institutions (IITs, IIMs, NLUs, AIIMS, and other notified institutes) for graduate or postgraduate level courses, with no income ceiling for eligibility.",
+    "benefits": {
+      "All Eligible Students": {
+        "Full Financial Support": "Complete tuition fee, hostel/mess charges, and other compulsory fees as charged by the institution",
+        "Living Allowance": "₹3,000 per month for books and stationery",
+        "Additional Support": "One-time computer allowance and cost of one to-and-fro rail/air fare per annum"
+      }
+    },
+    "documents": [
+      "Application Form",
+      "Passport-size photograph",
+      "Admission letter/proof of admission in a listed institution",
+      "Caste Certificate (signed by Revenue Officer, not below Tahsildar)",
+      "Previous academic mark sheets",
+      "Bank Account Passbook (Aadhaar-linked)",
+      "Fee structure certificate from the institution"
+    ],
+    "state": "central",
+    "ministry": "Ministry of Tribal Affairs",
+    "apply_url": "https://scholarships.gov.in",
+    "income_limit": null,
+    "occupation": "student",
+    "other": "No income ceiling; scheme limited to a fixed number of listed institutions notified annually by the Ministry",
+    "category": "st"
+  }
+]
