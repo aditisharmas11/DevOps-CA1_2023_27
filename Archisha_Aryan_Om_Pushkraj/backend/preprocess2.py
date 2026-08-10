@@ -1,10 +1,19 @@
 import matplotlib.pyplot as plt
 
-methods = ["Naive Bayes and SVM", "Decision Tree", "Ensemble Model", "SVM",
-           "Evolutionary Genetic Algorithm", "Proposed Solution"]
-accuracies = [90, 94.15, 88, 89.66, 95, 96.5]
-bar_colors = ['royalblue', 'slateblue', 'mediumslateblue', 'blueviolet',
-              'darkorchid', 'mediumorchid']
+METHODS = [
+    "Naive Bayes and SVM",
+    "Decision Tree",
+    "Ensemble Model",
+    "SVM",
+    "Evolutionary Genetic Algorithm",
+    "Proposed Solution"
+]
+ACCURACIES = [90, 94.15, 88, 89.66, 95, 96.5]
+BAR_COLORS = [
+    'royalblue', 'slateblue', 'mediumslateblue', 'blueviolet',
+    'darkorchid', 'mediumorchid'
+]
+OUTPUT_FILE = 'accuracy_comparison.png'
 
 plt.figure(figsize=(10, 6))
 
