@@ -1,6 +1,6 @@
 # 🌾 SmartAgri — AI-Based Crop Recommendation System
 
-## DevOps CA-1 | Hackathon / Challenge Based Group Project
+## DevOps CA-1 | Hackathon Challenge Based Group Project
 
 ---
 
@@ -17,7 +17,7 @@
 
 ---
 
-# 🏆 Selected Hackathon / Challenge
+# 🏆 Selected Hackathon Challenge
 
 ### Hackathon: Tech Eximius 2026
 
@@ -39,9 +39,9 @@ The objective of the CA task was to identify an existing:
 - Linux Foundation challenge
 - Bug / issue requiring a solution
 
+We selected the Hackathon challange
 The selected challenge was then recorded by the group in the provided class spreadsheet.
 
-> **Team members who filled the spreadsheet first were assigned the selected problem statement, and the same problem statement could not be selected by another group.**
 
 ---
 
