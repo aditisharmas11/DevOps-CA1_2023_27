@@ -1,0 +1,25 @@
+version: "1"
+id: github.repositories.search
+description: Search public GitHub repositories for direct competitors
+actor:
+  id: research-agent
+  type: agent
+delegation:
+  principal: user:maintainer
+capability: github.repositories.search
+effect: read
+resources:
+  - github:public-repositories
+risk: low
+approval:
+  mode: implicit
+recovery:
+  reversible: true
+  undo: No state is changed
+notification:
+  timing: after
+cost:
+  kind: free
+evidence:
+  outputs:
+    - search-results.json

@@ -1,0 +1,67 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "agent-action-contract"
+version = "0.1.0"
+description = "Lint AI agent actions for bounded authority, approval, recovery, cost, and evidence."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+authors = [{ name = "njs2017" }]
+keywords = ["ai-agents", "security", "policy", "lint", "governance"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Security",
+  "Topic :: Software Development :: Quality Assurance",
+]
+dependencies = [
+  "jsonschema>=4.23,<5",
+  "PyYAML>=6.0.2,<7",
+]
+
+[project.urls]
+Homepage = "https://github.com/njs2017/agent-action-contract"
+Repository = "https://github.com/njs2017/agent-action-contract"
+Issues = "https://github.com/njs2017/agent-action-contract/issues"
+
+[project.scripts]
+action-contract = "agent_action_contract.cli:entrypoint"
+
+[dependency-groups]
+dev = [
+  "mypy>=1.15",
+  "pytest>=8.3",
+  "ruff>=0.12",
+  "types-jsonschema>=4.23",
+  "types-PyYAML>=6.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/agent_action_contract"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/agent_action_contract/action-contract.schema.json" = "agent_action_contract/action-contract.schema.json"
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+packages = ["agent_action_contract"]

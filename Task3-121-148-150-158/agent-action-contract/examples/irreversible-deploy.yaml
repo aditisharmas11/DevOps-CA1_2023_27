@@ -1,0 +1,26 @@
+version: "1"
+id: production.deploy
+description: Replace the production deployment with a new release
+actor:
+  id: deploy-agent
+  type: agent
+delegation:
+  principal: user:release-manager
+  expires_at: "2026-07-20T18:00:00Z"
+capability: deployment.replace
+effect: destructive
+resources:
+  - deployment:production/api
+risk: critical
+approval:
+  mode: explicit
+recovery:
+  reversible: false
+notification:
+  timing: before
+cost:
+  kind: free
+evidence:
+  outputs:
+    - deployment:release-id
+    - check:production-health
