@@ -29,7 +29,7 @@
 
 https://unstop.com/hackathons/tech-eximius-2026-tech-circle-1690635
 
-The team selected this hackathon/challenge as part of the **DevOps CA-1 Challenge Selection Task**.
+The team selected this hackathon challenge as part of the **DevOps CA-1 Challenge Selection Task**.
 
 The objective of the CA task was to identify an existing:
 
