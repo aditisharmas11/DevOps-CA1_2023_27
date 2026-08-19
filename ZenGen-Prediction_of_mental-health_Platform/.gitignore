@@ -1,0 +1,36 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+build/
+
+# environment variables
+.env
+
+# logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# editor files
+.vscode/git init
+.idea/
+
+# archives
+*.tar.gz
+
+# vite backups
+vite.config.ts.*
+
+# runtime uploads
+server/public/
+
+TeenMindMap/attached_assets/
+node_modules/
+dist/
+.env
+.vscode/
+*.log

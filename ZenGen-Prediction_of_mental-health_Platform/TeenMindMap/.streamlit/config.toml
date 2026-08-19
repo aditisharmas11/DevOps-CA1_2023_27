@@ -1,0 +1,10 @@
+[server]
+headless = true
+address = "0.0.0.0"
+port = 5000
+
+[theme]
+primaryColor = "#FF4B8B"  # Pink color from the logo (heart)
+backgroundColor = "#F0E6F6"  # Light purple background similar to logo
+secondaryBackgroundColor = "#E8D8F0"  # Slightly darker purple
+textColor = "#2D1A45"  # Dark purple from logo text
