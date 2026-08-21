@@ -1,0 +1,256 @@
+From 7a5b95290d4e0a5fec24a0c40c77833566758def Mon Sep 17 00:00:00 2001
+From: Sanidhya Awasthi <sanidhya.awasthi@bfhl.in>
+Date: Tue, 18 Aug 2026 16:34:09 +0530
+Subject: [PATCH] Don't send a starting balance of 0 when only the starting
+ date is set
+
+Linking a bank account defaulted the custom starting balance to 0. Editing
+only the starting date kept that default and sent it to the server, which
+treats any defined balance as the real opening balance instead of deriving
+one from the bank, so the account opened out of sync.
+
+Leave the balance undefined until the user enters one. The amount input still
+shows 0, and a balance the user deliberately sets to 0 is still sent.
+
+Closes #8105
+---
+ .../modals/SelectLinkedAccountsModal.test.ts  | 46 ++++++++++++
+ .../modals/SelectLinkedAccountsModal.tsx      | 72 +++++++++++++------
+ .../fix-banksync-custom-start-date.md         |  6 ++
+ 3 files changed, 101 insertions(+), 23 deletions(-)
+ create mode 100644 upcoming-release-notes/fix-banksync-custom-start-date.md
+
+diff --git a/packages/desktop-client/src/components/modals/SelectLinkedAccountsModal.test.ts b/packages/desktop-client/src/components/modals/SelectLinkedAccountsModal.test.ts
+index 44578246b..da78f1666 100644
+--- a/packages/desktop-client/src/components/modals/SelectLinkedAccountsModal.test.ts
++++ b/packages/desktop-client/src/components/modals/SelectLinkedAccountsModal.test.ts
+@@ -6,7 +6,9 @@ import { describe, expect, it } from 'vitest';
+ 
+ import {
+   computeInitialLinkState,
++  getDefaultStartingSettings,
+   getSelectableAccountOptions,
++  resolveStartingSettings,
+ } from './SelectLinkedAccountsModal';
+ 
+ function makeLocalAccount(
+@@ -158,3 +160,47 @@ describe('getSelectableAccountOptions', () => {
+     ]);
+   });
+ });
++
++describe('resolveStartingSettings', () => {
++  it('sends no starting balance when the user only changed the date', () => {
++    // A row starts with a default date and no balance. Editing the date keeps
++    // the rest of the settings, which must not introduce a balance of 0.
++    const settings = { ...getDefaultStartingSettings(), date: '2026-01-15' };
++
++    expect(resolveStartingSettings(settings)).toEqual({
++      startingDate: '2026-01-15',
++      startingBalance: undefined,
++    });
++  });
++
++  it('sends no starting balance when nothing was touched', () => {
++    expect(resolveStartingSettings(undefined)).toEqual({
++      startingDate: undefined,
++      startingBalance: undefined,
++    });
++  });
++
++  it('sends the balance once the user enters one', () => {
++    const settings = { ...getDefaultStartingSettings(), amount: 12345 };
++
++    expect(resolveStartingSettings(settings).startingBalance).toBe(12345);
++  });
++
++  it('sends a balance the user deliberately set to zero', () => {
++    const settings = { ...getDefaultStartingSettings(), amount: 0 };
++
++    expect(resolveStartingSettings(settings).startingBalance).toBe(0);
++  });
++
++  it('ignores a blank date', () => {
++    expect(
++      resolveStartingSettings({ date: '   ' }).startingDate,
++    ).toBeUndefined();
++  });
++});
++
++describe('getDefaultStartingSettings', () => {
++  it('does not include a starting balance', () => {
++    expect(getDefaultStartingSettings().amount).toBeUndefined();
++  });
++});
+diff --git a/packages/desktop-client/src/components/modals/SelectLinkedAccountsModal.tsx b/packages/desktop-client/src/components/modals/SelectLinkedAccountsModal.tsx
+index ce17317d6..463ceb9d7 100644
+--- a/packages/desktop-client/src/components/modals/SelectLinkedAccountsModal.tsx
++++ b/packages/desktop-client/src/components/modals/SelectLinkedAccountsModal.tsx
+@@ -270,7 +270,7 @@ export function SelectLinkedAccountsModal({
+     initiallyChosenAccounts,
+   );
+   const [customStartingDates, setCustomStartingDates] = useState<
+-    Record<string, StartingBalanceInfo>
++    Record<string, CustomStartingSettings>
+   >({});
+   const { addOnBudgetAccountOption, addOffBudgetAccountOption } =
+     useAddBudgetAccountOptions();
+@@ -308,13 +308,9 @@ export function SelectLinkedAccountsModal({
+         }
+ 
+         // Finally link the matched account
+-        const customSettings = customStartingDates[chosenExternalAccountId];
+-        const startingDate =
+-          customSettings?.date && customSettings.date.trim() !== ''
+-            ? customSettings.date
+-            : undefined;
+-        const startingBalance =
+-          customSettings?.amount != null ? customSettings.amount : undefined;
++        const { startingDate, startingBalance } = resolveStartingSettings(
++          customStartingDates[chosenExternalAccountId],
++        );
+ 
+         if (propsWithSortedExternalAccounts.syncSource === 'simpleFin') {
+           linkAccountSimpleFin.mutate({
+@@ -459,11 +455,8 @@ export function SelectLinkedAccountsModal({
+   };
+ 
+   // Memoize default starting settings to avoid repeated calculations
+-  const defaultStartingSettings = useMemo<StartingBalanceInfo>(
+-    () => ({
+-      date: subDays(currentDay(), 89),
+-      amount: 0,
+-    }),
++  const defaultStartingSettings = useMemo<CustomStartingSettings>(
++    () => getDefaultStartingSettings(),
+     [],
+   );
+ 
+@@ -471,13 +464,12 @@ export function SelectLinkedAccountsModal({
+     if (customStartingDates[accountId]) {
+       return customStartingDates[accountId];
+     }
+-    // Default to 89 days ago (90 days inclusive, matches server default)
+     return defaultStartingSettings;
+   };
+ 
+   const setCustomStartingDate = (
+     accountId: string,
+-    settings: StartingBalanceInfo,
++    settings: CustomStartingSettings,
+   ) => {
+     setCustomStartingDates(prev => ({
+       ...prev,
+@@ -659,6 +651,40 @@ type StartingBalanceInfo = {
+   amount: number;
+ };
+ 
++// The starting balance the user typed into the link modal. `amount` stays
++// undefined until they actually edit it, so that only touching the date does
++// not send a starting balance of 0 to the server - which would override the
++// balance the bank reports.
++type CustomStartingSettings = {
++  date: string;
++  amount?: number;
++};
++
++/**
++ * The settings a row starts with. The balance is deliberately absent: the
++ * server derives the opening balance from the bank unless one is supplied, so
++ * defaulting it to 0 here would silently override the real balance for anyone
++ * who only adjusts the date.
++ */
++export function getDefaultStartingSettings(): CustomStartingSettings {
++  // Default to 89 days ago (90 days inclusive, matches server default)
++  return { date: subDays(currentDay(), 89) };
++}
++
++/**
++ * Turn the row's draft settings into the arguments sent when linking. Anything
++ * the user did not fill in stays undefined so the server keeps its own default.
++ */
++export function resolveStartingSettings(
++  settings: CustomStartingSettings | undefined,
++): { startingDate?: string; startingBalance?: number } {
++  return {
++    startingDate:
++      settings?.date && settings.date.trim() !== '' ? settings.date : undefined,
++    startingBalance: settings?.amount != null ? settings.amount : undefined,
++  };
++}
++
+ type SharedAccountRowProps = {
+   externalAccount: ExternalAccount;
+   chosenAccount: { id: string; name: string } | undefined;
+@@ -672,10 +698,10 @@ type SharedAccountRowProps = {
+ };
+ 
+ type TableRowProps = SharedAccountRowProps & {
+-  customStartingDate: StartingBalanceInfo;
++  customStartingDate: CustomStartingSettings;
+   onSetCustomStartingDate: (
+     accountId: string,
+-    settings: StartingBalanceInfo,
++    settings: CustomStartingSettings,
+   ) => void;
+   showStartingOptions: boolean;
+ };
+@@ -892,10 +918,10 @@ function getInstitutionName(
+ type StartingOptionsFieldsProps = {
+   accountId: string;
+   externalBalance: number | null | undefined;
+-  customStartingDate: StartingBalanceInfo;
++  customStartingDate: CustomStartingSettings;
+   onSetCustomStartingDate: (
+     accountId: string,
+-    settings: StartingBalanceInfo,
++    settings: CustomStartingSettings,
+   ) => void;
+   layout: 'inline' | 'stacked';
+ };
+@@ -929,7 +955,7 @@ function StartingOptionsFields({
+         {/* Starting Balance */}
+         <Field width={120} truncate={false} style={{ textAlign: 'right' }}>
+           <AmountInput
+-            value={customStartingDate.amount}
++            value={customStartingDate.amount ?? 0}
+             zeroSign={zeroSign}
+             onUpdate={amount =>
+               onSetCustomStartingDate(accountId, {
+@@ -987,7 +1013,7 @@ function StartingOptionsFields({
+             <Trans>Balance on that date:</Trans>
+           </Text>
+           <AmountInput
+-            value={customStartingDate.amount}
++            value={customStartingDate.amount ?? 0}
+             zeroSign={zeroSign}
+             onUpdate={amount =>
+               onSetCustomStartingDate(accountId, {
+@@ -1004,10 +1030,10 @@ function StartingOptionsFields({
+ }
+ 
+ type AccountCardProps = SharedAccountRowProps & {
+-  customStartingDate: StartingBalanceInfo;
++  customStartingDate: CustomStartingSettings;
+   onSetCustomStartingDate: (
+     accountId: string,
+-    settings: StartingBalanceInfo,
++    settings: CustomStartingSettings,
+   ) => void;
+ };
+ 
+diff --git a/upcoming-release-notes/fix-banksync-custom-start-date.md b/upcoming-release-notes/fix-banksync-custom-start-date.md
+new file mode 100644
+index 000000000..1d0ebe91d
+--- /dev/null
++++ b/upcoming-release-notes/fix-banksync-custom-start-date.md
+@@ -0,0 +1,6 @@
++---
++category: Bugfix
++authors: [Islinger19]
++---
++
++Fix bank sync setting an opening balance of 0 when a custom starting date is chosen without a custom starting balance
+-- 
+2.50.1 (Apple Git-155)
+
