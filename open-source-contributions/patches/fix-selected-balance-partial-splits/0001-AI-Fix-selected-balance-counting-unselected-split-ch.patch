@@ -1,0 +1,152 @@
+From 35e734ce3a50b04bf1f60f8ef6849c63b3a9488e Mon Sep 17 00:00:00 2001
+From: Sanidhya Awasthi <sanidhya.awasthi@bfhl.in>
+Date: Tue, 18 Aug 2026 15:01:19 +0530
+Subject: [PATCH] [AI] Fix selected balance counting unselected split children
+
+When a split parent was selected together with only some of its children,
+the selected balance dropped the children and summed the parent instead,
+so every child of the split was counted - including the ones that were
+never selected.
+
+Drop the parent when any of its children are selected and keep the
+selected children, so only what the user selected is counted. A parent
+selected on its own is unchanged and still contributes the whole split.
+
+Closes #5525
+---
+ .../src/components/accounts/Balance.test.tsx  | 51 +++++++++++++++++++
+ .../src/components/accounts/Balance.tsx       | 16 ++++--
+ .../desktop-client/src/spreadsheet/index.ts   |  5 +-
+ .../fix-selected-balance-partial-splits.md    |  6 +++
+ 4 files changed, 74 insertions(+), 4 deletions(-)
+ create mode 100644 upcoming-release-notes/fix-selected-balance-partial-splits.md
+
+diff --git a/packages/desktop-client/src/components/accounts/Balance.test.tsx b/packages/desktop-client/src/components/accounts/Balance.test.tsx
+index 40d1a355a..775edbbb0 100644
+--- a/packages/desktop-client/src/components/accounts/Balance.test.tsx
++++ b/packages/desktop-client/src/components/accounts/Balance.test.tsx
+@@ -2,6 +2,7 @@ import React from 'react';
+ 
+ import type { ScheduleEntity } from '@actual-app/core/types/models';
+ import { render, screen } from '@testing-library/react';
++import type { Mock } from 'vitest';
+ 
+ import { useCachedSchedules } from '#hooks/useCachedSchedules';
+ import { useSelectedItems } from '#hooks/useSelected';
+@@ -87,6 +88,56 @@ describe('SelectedBalance – normal transactions', () => {
+   });
+ });
+ 
++describe('SelectedBalance – split transactions', () => {
++  beforeEach(() => {
++    vi.clearAllMocks();
++    vi.mocked(useCachedSchedules).mockReturnValue(mockedSchedules([]));
++  });
++
++  // The rows query returns objects while the sum query returns a number, which
++  // the typed overload can't express in a single mock.
++  const mockSheetValues = vi.mocked(useSheetValue) as unknown as Mock;
++
++  function summedIds() {
++    // The second useSheetValue call is the one that sums the amounts.
++    const binding = vi.mocked(useSheetValue).mock.calls[1][0];
++    if (typeof binding === 'string' || !binding.query) {
++      throw new Error('expected the balance binding to carry a query');
++    }
++    const [filter] = binding.query.serialize().filterExpressions as Array<{
++      id: { $oneof: string[] };
++    }>;
++    return filter.id.$oneof;
++  }
++
++  test('sums only the selected children when a parent is partially selected', () => {
++    mockSheetValues
++      .mockReturnValueOnce([{ id: 'child-1', parent_id: 'parent-1' }])
++      .mockReturnValueOnce(-5951);
++
++    render(
++      <TestProviders>
++        <SelectedBalance selectedItems={new Set(['parent-1', 'child-1'])} />
++      </TestProviders>,
++    );
++
++    // The parent is dropped, so the unselected sibling is not counted.
++    expect(summedIds()).toEqual(['child-1']);
++  });
++
++  test('sums the whole split when only the parent is selected', () => {
++    mockSheetValues.mockReturnValueOnce([]).mockReturnValueOnce(-7239);
++
++    render(
++      <TestProviders>
++        <SelectedBalance selectedItems={new Set(['parent-1'])} />
++      </TestProviders>,
++    );
++
++    expect(summedIds()).toEqual(['parent-1']);
++  });
++});
++
+ describe('SelectedBalance – preview (scheduled) transactions', () => {
+   beforeEach(() => {
+     vi.clearAllMocks();
+diff --git a/packages/desktop-client/src/components/accounts/Balance.tsx b/packages/desktop-client/src/components/accounts/Balance.tsx
+index 58b7618f8..3bb70e84d 100644
+--- a/packages/desktop-client/src/components/accounts/Balance.tsx
++++ b/packages/desktop-client/src/components/accounts/Balance.tsx
+@@ -75,11 +75,21 @@ export function SelectedBalance({
+         id: { $oneof: [...selectedItems] },
+         parent_id: { $oneof: [...selectedItems] },
+       })
+-      .select('id'),
++      .select(['id', 'parent_id']),
+   });
+-  const ids = new Set((rows || []).map((r: { id: string }) => r.id));
+ 
+-  const finalIds = [...selectedItems].filter(id => !ids.has(id));
++  // When a split parent is selected together with some of its children, summing
++  // the parent would count every child of the split - including the ones that
++  // were never selected. Drop the parent instead and keep the selected
++  // children, so only what the user actually selected is counted. A parent
++  // selected on its own is left alone and still contributes the whole split.
++  const parentIdsWithSelectedChildren = new Set(
++    (rows || []).map(r => r.parent_id),
++  );
++
++  const finalIds = [...selectedItems].filter(
++    id => !parentIdsWithSelectedChildren.has(id),
++  );
+   let balance = useSheetValue<'balance', `selected-balance-${string}`>({
+     name: (name + '-sum') as `selected-balance-${string}`,
+     query: q('transactions')
+diff --git a/packages/desktop-client/src/spreadsheet/index.ts b/packages/desktop-client/src/spreadsheet/index.ts
+index 1c7059390..2ddcbf8ba 100644
+--- a/packages/desktop-client/src/spreadsheet/index.ts
++++ b/packages/desktop-client/src/spreadsheet/index.ts
+@@ -83,7 +83,10 @@ export type Spreadsheets = {
+ 
+     // Balance fields
+     [key: `balance-query-${string}`]: number;
+-    [key: `selected-transactions-${string}`]: Array<{ id: string }>;
++    [key: `selected-transactions-${string}`]: Array<{
++      id: string;
++      parent_id: string | null;
++    }>;
+     [key: `selected-balance-${string}`]: number;
+   };
+ };
+diff --git a/upcoming-release-notes/fix-selected-balance-partial-splits.md b/upcoming-release-notes/fix-selected-balance-partial-splits.md
+new file mode 100644
+index 000000000..cce4d886e
+--- /dev/null
++++ b/upcoming-release-notes/fix-selected-balance-partial-splits.md
+@@ -0,0 +1,6 @@
++---
++category: Bugfix
++authors: [Islinger19]
++---
++
++Fix the selected balance counting unselected split children when a split parent and only some of its children are selected
+-- 
+2.50.1 (Apple Git-155)
+
