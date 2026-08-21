@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+submissions/*.csv
+!submissions/.gitkeep
+outputs/
+*.bin
+*.safetensors
+.ipynb_checkpoints/
