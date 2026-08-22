@@ -1,0 +1,32 @@
+# Competition data — never committed (CLAUDE.md §2)
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+
+# Trained artifacts
+models/*
+!models/.gitkeep
+
+# Submissions
+submissions/*
+!submissions/.gitkeep
+
+# Large generated report — regenerate with `make train`
+reports/oof_predictions.csv
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# Secrets — CLAUDE.md §2 forbids these in the repo, ever
+kaggle.json
+.env
+
+# OS
+.DS_Store

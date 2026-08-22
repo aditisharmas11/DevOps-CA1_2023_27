@@ -1,0 +1,152 @@
+{
+  "metric": "roc_auc",
+  "greater_is_better": true,
+  "task_type": "classification",
+  "n_splits": 5,
+  "per_model": {
+    "lightgbm": {
+      "folds": [
+        0.9630554514787215,
+        0.9637839380226669,
+        0.9640745045502395,
+        0.9645767310658878,
+        0.963541518373982
+      ],
+      "mean": 0.9638064286982996,
+      "std": 0.0005098785138934508
+    },
+    "hist_gbm": {
+      "folds": [
+        0.9616487459507637,
+        0.9628762536438875,
+        0.9632627086707114,
+        0.9638920253599178,
+        0.9624336584943916
+      ],
+      "mean": 0.9628226784239343,
+      "std": 0.0007575557733810801
+    }
+  },
+  "blend": {
+    "weights": {
+      "lightgbm": 0.7,
+      "hist_gbm": 0.3
+    },
+    "score": 0.9638097871631686
+  },
+  "runtime_seconds": 675.4989611250021,
+  "fold_seconds": {
+    "lightgbm": [
+      75.67727274999925,
+      86.55122116699931,
+      75.04931437499908,
+      77.47508387500056,
+      88.37775820800016
+    ],
+    "hist_gbm": [
+      33.20259795899983,
+      59.48340054200162,
+      57.49917579099929,
+      49.35484833300143,
+      70.90906729200287
+    ]
+  },
+  "best_iterations": {
+    "lightgbm": [
+      2794,
+      3188,
+      2805,
+      2972,
+      3442
+    ]
+  },
+  "config_snapshot": {
+    "project": {
+      "name": "smartphone-addiction-s6e8",
+      "seed": 42
+    },
+    "paths": {
+      "raw_dir": "/Users/fahee/Documents/Symbiosis Assignments/DevOps/smartphone-addiction-s6e8/data/raw",
+      "processed_dir": "/Users/fahee/Documents/Symbiosis Assignments/DevOps/smartphone-addiction-s6e8/data/processed",
+      "models_dir": "/Users/fahee/Documents/Symbiosis Assignments/DevOps/smartphone-addiction-s6e8/models",
+      "reports_dir": "/Users/fahee/Documents/Symbiosis Assignments/DevOps/smartphone-addiction-s6e8/reports",
+      "figures_dir": "/Users/fahee/Documents/Symbiosis Assignments/DevOps/smartphone-addiction-s6e8/reports/figures",
+      "submissions_dir": "/Users/fahee/Documents/Symbiosis Assignments/DevOps/smartphone-addiction-s6e8/submissions",
+      "train_file": "train.csv",
+      "test_file": "test.csv",
+      "sample_submission_file": "sample_submission.csv"
+    },
+    "contract": {
+      "id_column": "id",
+      "target_column": "addicted_label",
+      "task_type": "classification",
+      "drop_columns": []
+    },
+    "runtime": {
+      "n_jobs": -1,
+      "progress": true,
+      "log_every_n_iterations": 50
+    },
+    "cv": {
+      "n_splits": 5,
+      "shuffle": true
+    },
+    "metric": {
+      "name": "roc_auc",
+      "greater_is_better": true
+    },
+    "features": {
+      "numeric_imputation": "median",
+      "categorical_imputation": "most_frequent",
+      "categorical_encoding": "ordinal",
+      "scale_numeric": false,
+      "max_onehot_cardinality": 15,
+      "add_missing_indicators": true
+    },
+    "models": [
+      {
+        "name": "lightgbm",
+        "enabled": true,
+        "weight": 0.7,
+        "early_stopping_rounds": 100,
+        "params": {
+          "n_estimators": 10000,
+          "learning_rate": 0.03,
+          "num_leaves": 63,
+          "min_child_samples": 50,
+          "subsample": 0.9,
+          "subsample_freq": 1,
+          "colsample_bytree": 0.9,
+          "reg_lambda": 1.0,
+          "device": "cpu",
+          "verbose": 1
+        }
+      },
+      {
+        "name": "hist_gbm",
+        "enabled": true,
+        "weight": 0.3,
+        "early_stopping_rounds": null,
+        "params": {
+          "max_iter": 4000,
+          "learning_rate": 0.04,
+          "max_leaf_nodes": 63,
+          "min_samples_leaf": 50,
+          "l2_regularization": 1.0,
+          "early_stopping": true,
+          "n_iter_no_change": 50,
+          "validation_fraction": 0.1,
+          "verbose": 1
+        }
+      }
+    ],
+    "output": {
+      "submission_filename": "submission.csv",
+      "round_predictions_to_labels": false,
+      "clip_probabilities": [
+        0.0,
+        1.0
+      ]
+    }
+  }
+}

@@ -1,0 +1,93 @@
+project:
+  name: smartphone-addiction-s6e8
+  seed: 42
+
+paths:
+  raw_dir: data/raw
+  processed_dir: data/processed
+  models_dir: models
+  reports_dir: reports
+  figures_dir: reports/figures
+  submissions_dir: submissions
+  train_file: train.csv
+  test_file: test.csv
+  sample_submission_file: sample_submission.csv
+
+contract:
+  # Confirmed from the competition page. Set to null to fall back to auto-detection
+  # (see CLAUDE.md §5); explicit values always win.
+  id_column: id
+  target_column: addicted_label
+  task_type: classification # binary
+  drop_columns: []
+
+runtime:
+  # No wall-clock budget (CLAUDE.md §2). CPU only — MPS is unreachable, see §3a.
+  n_jobs: -1 # -1 = all cores
+  progress: true # per-fold and per-iteration logging
+  log_every_n_iterations: 50 # LightGBM log_evaluation period
+
+cv:
+  n_splits: 5
+  shuffle: true
+  # stratified is used automatically for classification, ignored for regression
+
+metric:
+  # Confirmed official metric for S6E8. Do not change.
+  # Supported: accuracy | balanced_accuracy | f1_macro | roc_auc | rmse | mae | r2
+  # Also accepts: auto
+  name: roc_auc
+  greater_is_better: true
+
+features:
+  numeric_imputation: median
+  categorical_imputation: most_frequent
+  categorical_encoding: ordinal # ordinal | onehot
+  scale_numeric: false # tree models don't need it
+  max_onehot_cardinality: 15
+  # Every feature in this dataset has 4-19% missing values (see reports/data_contract.md).
+  # Median imputation alone collapses "unknown" into "typical" and discards that signal, so
+  # SimpleImputer(add_indicator=True) appends one binary column per numeric feature that had
+  # missing values at fit time. Set false to impute without preserving the pattern.
+  add_missing_indicators: true
+
+models:
+  # Each entry is trained across all folds; predictions are blended by weight.
+  # Sized for accuracy, not speed — there is no time limit.
+  - name: lightgbm
+    enabled: true
+    weight: 0.7
+    # Read by src/train.py, not passed to the estimator. null disables early stopping.
+    early_stopping_rounds: 100
+    params:
+      n_estimators: 10000
+      learning_rate: 0.03
+      num_leaves: 63
+      min_child_samples: 50
+      subsample: 0.9
+      subsample_freq: 1
+      colsample_bytree: 0.9
+      reg_lambda: 1.0
+      device: cpu # do not change; see CLAUDE.md §3a
+      verbose: 1
+  - name: hist_gbm
+    enabled: true
+    weight: 0.3
+    early_stopping_rounds: null # hist_gbm early-stops internally, see params
+    params:
+      max_iter: 4000
+      learning_rate: 0.04
+      max_leaf_nodes: 63
+      min_samples_leaf: 50
+      l2_regularization: 1.0
+      early_stopping: true
+      n_iter_no_change: 50
+      validation_fraction: 0.1
+      verbose: 1
+
+output:
+  submission_filename: submission.csv
+  # MUST stay false for S6E8 — the competition scores probabilities via ROC AUC.
+  # This flag exists only to keep the hard-label code path testable. Do not flip it.
+  round_predictions_to_labels: false
+  clip_probabilities: [0.0, 1.0] # safety clamp before writing

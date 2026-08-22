@@ -1,0 +1,77 @@
+# CI configuration: same pipeline, tiny budget, fixture-compatible contract.
+# Used by .github/workflows/ci.yml after copying tests/fixtures/clf/*.csv into data/raw/.
+project:
+  name: smartphone-addiction-s6e8-ci
+  seed: 42
+
+paths:
+  raw_dir: data/raw
+  processed_dir: data/processed
+  models_dir: models
+  reports_dir: reports
+  figures_dir: reports/figures
+  submissions_dir: submissions
+  train_file: train.csv
+  test_file: test.csv
+  sample_submission_file: sample_submission.csv
+
+contract:
+  # MUST stay null. CI runs on tests/fixtures/clf, whose target is named `target`,
+  # not `addicted_label`. Auto-detection reads the names from sample_submission.csv.
+  id_column: null
+  target_column: null
+  task_type: null
+  drop_columns: []
+
+runtime:
+  n_jobs: -1
+  progress: false # keep CI logs readable
+  log_every_n_iterations: 0
+
+cv:
+  n_splits: 2
+  shuffle: true
+
+metric:
+  name: auto # resolves to roc_auc for the binary fixture
+  greater_is_better: null # take the direction from the registry
+
+features:
+  numeric_imputation: median
+  categorical_imputation: most_frequent
+  categorical_encoding: ordinal
+  scale_numeric: false
+  max_onehot_cardinality: 15
+  add_missing_indicators: true
+
+models:
+  # Tiny on purpose. min_child_samples/min_samples_leaf must stay at 2: the clf fixture
+  # has 60 rows and 2 folds, so 30 rows per fit, and the production value of 50 would
+  # prevent any split at all — giving a constant prediction that trips the
+  # "more than two distinct values" guard for the wrong reason.
+  - name: lightgbm
+    enabled: true
+    weight: 0.7
+    early_stopping_rounds: null
+    params:
+      n_estimators: 20
+      learning_rate: 0.2
+      num_leaves: 7
+      min_child_samples: 2
+      verbose: -1
+  - name: hist_gbm
+    enabled: true
+    weight: 0.3
+    early_stopping_rounds: null
+    params:
+      max_iter: 20
+      learning_rate: 0.2
+      max_leaf_nodes: 7
+      min_samples_leaf: 2
+      early_stopping: false
+      verbose: 0
+
+output:
+  submission_filename: submission.csv
+  round_predictions_to_labels: false
+  clip_probabilities: [0.0, 1.0]

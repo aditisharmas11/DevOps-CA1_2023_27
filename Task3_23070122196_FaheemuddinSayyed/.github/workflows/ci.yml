@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Format check
+        run: ruff format --check .
+
+      - name: Unit tests
+        run: pytest -q
+
+      # Proves the CLI works in a clean environment without the real, undistributable
+      # Kaggle data. config/ci.yaml nulls the contract so auto-detection picks up the
+      # fixture's `target` column rather than the competition's `addicted_label`.
+      - name: Fixture smoke run
+        run: |
+          cp tests/fixtures/clf/train.csv tests/fixtures/clf/test.csv tests/fixtures/clf/sample_submission.csv data/raw/
+          python -m src.cli inspect --config config/ci.yaml
+          python -m src.cli train --config config/ci.yaml
+          python -m src.cli predict --config config/ci.yaml
+          test -f submissions/submission.csv
+
+      - name: Assert the submission holds probabilities
+        run: python -c "import pandas as pd; s = pd.read_csv('submissions/submission.csv'); t = s.columns[1]; assert s[t].between(0, 1).all(), (s[t].min(), s[t].max()); assert s[t].nunique() > 2, s[t].nunique(); print('submission ok', s.shape, s[t].nunique(), 'distinct values')"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-artifacts
+          path: |
+            reports/data_contract.md
+            reports/metrics.json
+            submissions/submission.csv
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the image
+        run: docker build -t smartphone-addiction-s6e8 .
