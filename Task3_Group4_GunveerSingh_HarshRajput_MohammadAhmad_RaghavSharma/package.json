@@ -1,0 +1,42 @@
+{
+  "name": "aitravel",
+  "description": "Atlas - Build Once. Render Everywhere. Premium AI-inspired travel planner showcasing React Elements multi-render output.",
+  "private": true,
+  "version": "0.0.0",
+  "license": "MIT",
+  "author": "Mohammad Ahmad",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Bitsnbytes14/atlas.git"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build && tsc -p server/tsconfig.json",
+    "lint": "oxlint",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@elevenlabs/react": "^1.10.2",
+    "@types/express": "^5.0.6",
+    "@unlayer/react-elements": "^0.1.20",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "openai": "^6.48.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-router-dom": "^7.18.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^24.13.2",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.3",
+    "oxlint": "^1.71.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "~6.0.2",
+    "vite": "^8.1.1",
+    "vitest": "^3.2.7"
+  }
+}
