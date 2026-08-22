@@ -1,0 +1,1756 @@
+#!/usr/bin/env node
+// colab-handbook convention audit.
+//
+// This is NOT in-repo CI. It is a CLI you run locally (or on a schedule) that audits
+// MANY repositories across MULTIPLE owners at once — five of them, GitHub orgs and
+// personal accounts alike — plus local-only repos that have no GitHub presence
+// at all. That breadth is the point: the failure mode it exists to catch is drift
+// BETWEEN repos, which no single repo's CI can ever see.
+//
+// Why it left CI: a convention guard living inside each repo can only check the repo
+// it ships in, has to be copied everywhere to be useful, and rots differently in each
+// copy. One external auditor with one source of truth is simpler and honest about
+// what it is — an advisory report, not a gate.
+//
+// Dependencies: none. Plain Node, plus `gh` shelled out for GitHub API reads (only
+// when a repo is given as an owner/name slug rather than a local path).
+//
+// It also runs RECONCILIATION checks: copied handbook artifacts carry a stamp naming
+// the template and the handbook version they were copied at (see `colab template`).
+// This audit compares each stamp against the handbook's own git history and flags a
+// repo whose copy is now behind a changed template — so an adopted repo finds out via
+// the audit, not by luck. The handbook is this checkout (the audit knows its own
+// location); its current version is `git describe --tags --abbrev=0`.
+//
+// Repo list resolution (highest precedence first):
+//   1. --config <path>            explicit; errors if missing
+//   2. ~/.colab/repos.txt         machine-local fleet registry (PRIVATE, not committed)
+//   3. <this dir>/repos.txt       the committed neutral example (fallback only)
+// (COLAB_HOME overrides ~/.colab, matching the colab CLI.)
+//
+// Usage:
+//   node audit.mjs                       # audit everything in the resolved repo list
+//   node audit.mjs --local ~/code/foo    # audit one local path, ad hoc
+//   node audit.mjs --config other.txt    # a different repo list
+//   node audit.mjs --json                # machine-readable
+//   node audit.mjs --quiet               # only repos with findings
+//
+// Exit code: 0 when every repo passes, 1 when any repo has a finding, 2 on a usage
+// error. Findings never crash the run — a repo missing project.yml is a result, not
+// an exception.
+
+import { execFileSync } from "node:child_process";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { join, resolve, basename, dirname } from "node:path";
+import { homedir } from "node:os";
+import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
+
+// The stamp/drift logic is SHARED with `colab update` (tools/lib/stamp.js), which refreshes what
+// this tool reports. Two readings of a stamp that disagreed about what "behind" means is the
+// two-places-drift disease this handbook exists to kill, so there is one implementation. It is
+// CommonJS because the CLI is; `createRequire` is how ESM consumes it.
+const require = createRequire(import.meta.url);
+const stamp = require("../tools/lib/stamp.js");
+// The convention-label set is shared with adoption/sync (they provision what this reports),
+// so the three surfaces cannot drift about what the full set is. See tools/lib/labels.js.
+const { missingConventionLabels } = require("../tools/lib/labels.js");
+const {
+  handbookInfo, templateNames, templateChangedSince, cmpParts, cmpSemver,
+  parseWorkflowStamp, parseClaudeStamp, workflowProvenance, unstampedFinding, looksLikeHandbookClaude,
+} = stamp;
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+// audit/ lives inside the handbook checkout; COLAB_HANDBOOK overrides for running the
+// audit from elsewhere (or for tests that point at a scratch handbook).
+const HANDBOOK_ROOT = process.env.COLAB_HANDBOOK ? resolve(process.env.COLAB_HANDBOOK) : resolve(HERE, "..");
+const COLAB_HOME = process.env.COLAB_HOME || join(homedir(), ".colab");
+
+// ---------------------------------------------------------------------------- args
+
+function parseArgs(argv) {
+  // config === null means "resolve from the precedence chain"; a string means explicit.
+  const opts = { config: null, locals: [], slugs: [], json: false, quiet: false, help: false };
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === "--json") opts.json = true;
+    else if (a === "--quiet" || a === "-q") opts.quiet = true;
+    else if (a === "--local") {
+      const p = argv[++i];
+      if (!p) die("--local needs a path");
+      opts.locals.push(p);
+    } else if (a === "--config" || a === "-c") {
+      const p = argv[++i];
+      if (!p) die("--config needs a path");
+      opts.config = p;
+    } else if (a === "--help" || a === "-h") {
+      // Signal, don't print-and-exit. The help text is ~12 KB — larger than a
+      // pipe buffer — so exiting here truncated it for any reader that is not
+      // a terminal. See the note above process.exitCode in main.
+      opts.help = true;
+      return opts;
+    } else if (a.startsWith("-")) die(`unknown flag: ${a}`);
+    else opts.slugs.push(a); // bare argument = slug or path
+  }
+  return opts;
+}
+
+// Resolve the repo-list file per the documented precedence. Returns { path, source }
+// or null when auditing only --local / positional targets (no list needed).
+function resolveConfig(opts) {
+  if (opts.config) {
+    if (!existsSync(opts.config)) die(`config not found: ${opts.config}`);
+    return { path: opts.config, source: "--config" };
+  }
+  const local = join(COLAB_HOME, "repos.txt");
+  if (existsSync(local)) return { path: local, source: COLAB_HOME + "/repos.txt" };
+  const bundled = join(HERE, "repos.txt");
+  return { path: bundled, source: "bundled example (audit/repos.txt)" };
+}
+
+function die(msg) {
+  // Deliberately keeps process.exit(): die() is a control-flow terminator called
+  // from mid-loop and mid-function, where returning would let the caller carry
+  // on with invalid state. Exiting is safe here because it writes a single short
+  // line to stderr — always well under a pipe buffer, and stderr is a separate
+  // buffer from the JSON on stdout, so it cannot be the thing that gets cut.
+  console.error(`audit: ${msg}`);
+  process.exit(2);
+}
+
+// ------------------------------------------------------------------- tiny YAML read
+//
+// project.yml is a flat mapping of scalars by design. A hand-rolled reader keeps this
+// tool dependency-free; anything it cannot understand is reported as a parse finding
+// rather than silently ignored, so the narrowness is visible instead of dangerous.
+//
+// ONE indented form is accepted: a block sequence of scalars under a key, because
+// `integration:` is a list and a descriptor that cannot express a list would push repos
+// into encoding one in a string. Nesting of every other shape remains a finding — the
+// reader stays narrow on purpose, and the narrowness stays visible.
+//
+// (The `colab` CLI reads the same file through tools/lib/yaml.js, which accepts nested
+// maps as well. The two are deliberately NOT merged: this one's refusal to parse nesting
+// is a CHECK — it is how an over-clever descriptor gets reported instead of silently
+// half-read — while the CLI only needs to consume valid files. Sharing one reader would
+// mean deleting the check.)
+
+function parseScalarValue(raw) {
+  let val = raw.replace(/\s+#.*$/, "").trim(); // strip trailing comment
+  if (/^".*"$/.test(val) || /^'.*'$/.test(val)) return val.slice(1, -1);
+  if (val === "" || val === "null" || val === "~") return null;
+  if (val === "true") return true;
+  if (val === "false") return false;
+  return val;
+}
+
+function parseFlatYaml(text) {
+  const out = {};
+  const problems = [];
+  // The key whose block sequence may follow. Cleared by any column-0 line, so a `- item`
+  // can never attach to a key it does not sit directly under.
+  let listKey = null;
+  text.split(/\r?\n/).forEach((raw, idx) => {
+    const line = raw.replace(/\t/g, "  ");
+    if (!line.trim() || /^\s*#/.test(line)) return;
+    if (/^\s+/.test(line)) {
+      const item = line.match(/^\s+-\s*(.*)$/);
+      if (listKey !== null && item) {
+        if (!Array.isArray(out[listKey])) out[listKey] = [];
+        out[listKey].push(parseScalarValue(item[1]));
+        return;
+      }
+      problems.push(`line ${idx + 1}: nested/indented YAML is not supported by this reader (flat key: value, or a "- item" list under a key)`);
+      return;
+    }
+    listKey = null;
+    const m = line.match(/^([A-Za-z0-9_.-]+)\s*:\s*(.*)$/);
+    if (!m) {
+      problems.push(`line ${idx + 1}: not a "key: value" pair -> ${line.trim()}`);
+      return;
+    }
+    const [, key, rawVal] = m;
+    const trimmed = rawVal.replace(/\s+#.*$/, "").trim();
+    if (/^\[.*\]$/.test(trimmed)) {
+      const inner = trimmed.slice(1, -1).trim();
+      out[key] = inner === "" ? [] : inner.split(",").map((s) => parseScalarValue(s));
+      return;
+    }
+    out[key] = parseScalarValue(rawVal);
+    // A key with a genuinely empty value may open a block sequence on the next lines. It
+    // stays `null` if none follows — `production:` must keep meaning null, not [].
+    if (trimmed === "") listKey = key;
+  });
+  return { data: out, problems };
+}
+
+// ------------------------------------------------------------------ version helpers
+
+// "^8.3" ">=22.1 <23" "v22" "22.x" -> "8.3" "22.1" "22" "22"
+function normaliseVersion(raw) {
+  if (raw === null || raw === undefined) return null;
+  const s = String(raw).trim();
+  const m = s.match(/(\d+(?:\.\d+)*)/);
+  return m ? m[1] : null;
+}
+
+function major(v) {
+  const n = normaliseVersion(v);
+  return n ? n.split(".")[0] : null;
+}
+
+function isRange(s) {
+  const t = String(s).trim();
+  return /^[\^~><=]/.test(t) || /[\s|]/.test(t) || /\.(\*|x)$/i.test(t);
+}
+
+// (cmpParts comes from tools/lib/stamp.js — one numeric version compare, shared.)
+
+// Agreement at the precision both sides actually state. "22" vs "22.1" agree —
+// nobody declared the minor, so nobody is claiming anything about it. "8.3" vs "8.4"
+// DISagree, because both sides stated a minor and they differ. This matters: a Node
+// major is the unit that breaks builds, while PHP minors are real feature releases.
+function prefixAgree(a, b) {
+  const A = (normaliseVersion(a) || "").split(".").map(Number);
+  const B = (normaliseVersion(b) || "").split(".").map(Number);
+  if (!A.length || !B.length) return true;
+  const n = Math.min(A.length, B.length);
+  for (let i = 0; i < n; i++) if (A[i] !== B[i]) return false;
+  return true;
+}
+
+// Does a concrete version satisfy a manifest constraint like "^8.3", "~22.1",
+// ">=22 <23"? Whitespace-separated clauses are ANDed, which is how both npm and
+// composer read them. Anything unparseable returns true — this tool reports drift,
+// it does not invent violations out of syntax it does not understand.
+function satisfiesConstraint(version, constraint) {
+  const v = normaliseVersion(version);
+  if (!v) return true;
+  const vp = v.split(".").map(Number);
+  const clauses = String(constraint).trim().split(/\s+/).filter(Boolean);
+  if (!clauses.length) return true;
+  return clauses.every((cl) => {
+    const m = cl.match(/^(\^|~|>=|<=|>|<|=)?v?(\d+(?:\.\d+)*)/);
+    if (!m) return true;
+    const op = m[1] || "=";
+    const t = m[2].split(".").map(Number);
+    const c = cmpParts(vp, t);
+    switch (op) {
+      case "^": // same major, at or above
+        return vp[0] === t[0] && c >= 0;
+      case "~": // same major.minor (when a minor was given), at or above
+        return vp[0] === t[0] && (t.length < 2 || vp[1] === t[1]) && c >= 0;
+      case ">=": return c >= 0;
+      case ">": return c > 0;
+      case "<=": return c <= 0;
+      case "<": return c < 0;
+      default: return prefixAgree(v, m[2]);
+    }
+  });
+}
+
+
+// ------------------------------------------------------- handbook version + stamps
+//
+// Reconciliation rests on two facts the audit can establish locally:
+//   1. The handbook's CURRENT version — `git describe --tags --abbrev=0` in this
+//      checkout. Before any tag exists that command fails; we then treat the version
+//      as `v0` and mark the handbook "untagged", which DEACTIVATES stamp comparisons
+//      (there is no real version line to compare against) rather than failing.
+//   2. Whether a template CHANGED since a given stamp — `git log <stamp>..HEAD` scoped
+//      to that template's file. Non-empty history = the adopter's copy is behind.
+
+// All of the above now lives in tools/lib/stamp.js, imported at the top of this file:
+// gitIn, handbookInfo, templateNames, cmpSemver, templateChangedSince, parseWorkflowStamp,
+// parseClaudeStamp, WORKFLOW_FINGERPRINTS, workflowProvenance, unstampedFinding, looksLikeHandbookClaude.
+// They take the handbook root explicitly (this file passes HANDBOOK_ROOT) because `colab update`
+// locates the handbook differently.
+
+// Run all stamp/reconciliation checks for one repo, pushing findings via fail/warn.
+// Silent when there is nothing to say (the common, healthy case).
+function checkStamps(src, hb, tmplNames, fail, warn, { ceremony = "standard" } = {}) {
+  const cur = hb.version;
+
+  const compareStamp = (kind, name, stampVersion, files, { isCi = false } = {}) => {
+    // Deactivated while the handbook is untagged — a global note already says so.
+    if (hb.untagged || !hb.hasGit) return;
+    if (name !== null && !tmplNames.has(name)) {
+      warn(`${kind} stamped @ ${stampVersion} names unknown template "${name}" — not in handbook templates/`);
+      return;
+    }
+    if (cmpSemver(stampVersion, cur) > 0) {
+      warn(`${kind} stamped @ ${stampVersion} is NEWER than handbook current ${cur} — clock skew or a hand-edited stamp`);
+      return;
+    }
+    const { verifiable, changed } = templateChangedSince(HANDBOOK_ROOT, files, stampVersion);
+    if (!verifiable) {
+      warn(`${kind} stamped @ ${stampVersion}, a version not in this handbook checkout — cannot verify drift (fetch tags, or re-copy)`);
+      return;
+    }
+    if (changed) {
+      // ceremony: light (#79) downgrades drift on a NON-CI template to an advisory — CI/secret-scan
+      // integrity is never optional, on any ceremony value, so a `ci-*` template copy stays a hard
+      // finding regardless. This is the "stamp drift on non-CI templates" item project.schema.md's
+      // ceremony section names; it exists to stop beta noise from drowning real findings, not to
+      // let a live repo's CI drift unnoticed — and it cannot reach CI because `light` already
+      // requires `production: null` (no live repo can carry it).
+      const msg = `${kind} copied @ ${stampVersion} — template changed since (${cur}): review, re-copy via colab template`;
+      if (ceremony === "light" && !isCi) warn(`${msg} (ceremony: light — advisory, not a build/secret-scan template)`);
+      else fail(msg);
+    }
+  };
+
+  // --- workflow copies ---
+  for (const wf of src.listDir(".github/workflows").filter((f) => /\.ya?ml$/.test(f))) {
+    const text = src.readFile(`.github/workflows/${wf}`);
+    const stem = wf.replace(/\.ya?ml$/, "");
+    const stamp = parseWorkflowStamp(text);
+    if (stamp) {
+      const isCi = /^ci-/.test(stamp.name);
+      compareStamp(`${wf}`, stamp.name, stamp.version, [`templates/${stamp.name}.yml`, `templates/${stamp.name}.yaml`], { isCi });
+    } else {
+      // Content decides, never the filename — a workflow that merely SHARES a template's name
+      // was not copied from it, and saying otherwise pushes people toward asserting a lineage
+      // they never had (the advice being `--force`, that is a data-loss bug once a template of
+      // that name exists). `unstampedFinding` is shared with `colab update` so the two tools
+      // cannot drift on this. The `unrelated` finding is deliberately NOT raised here: it has no
+      // action, and the audit reports drift, not reassurance.
+      const finding = unstampedFinding(workflowProvenance(text, stem, tmplNames));
+      if (finding && finding.state === 'unstamped') warn(`${wf} unstamped — ${finding.reason}`);
+    }
+  }
+
+  // --- CLAUDE.md conventions block ---
+  const claude = src.readFile("CLAUDE.md");
+  if (claude) {
+    const stamp = parseClaudeStamp(claude);
+    if (stamp) {
+      compareStamp("CLAUDE block", null, stamp.version, ["templates/repo-CLAUDE-block.md"]);
+    } else if (looksLikeHandbookClaude(claude)) {
+      warn("CLAUDE.md has the conventions block but no colab-handbook stamp — cannot track handbook drift; re-paste the current block");
+    }
+  }
+}
+
+// -------------------------------------------------------- workflow `on:` triggers
+//
+// project.yml gets a flat reader; a GitHub workflow's `on:` block is nested, so it
+// gets its own pragmatic parser. Workflows are machine-formatted enough that a small
+// indentation-aware scan (not a full YAML engine) reads triggers reliably. We only
+// need a few facts per workflow: which events fire it, and — for push and
+// pull_request — the branch/tag filter lists. Everything else is ignored on purpose.
+//
+// Returns { found, events:Set,
+//           pushBranches:[]|null, pushBranchesIgnore:[]|null, pushTags:[]|null,
+//           prBranches:[]|null }.
+// A null list means the filter is ABSENT. For push, absent branches + absent tags =
+// "all branches" (a bare `push:` fires on every branch). Absent branches but PRESENT
+// tags = "tags only" — no branch push at all (a release/tag workflow).
+function parseWorkflowOn(text) {
+  const res = { found: false, events: new Set(), pushBranches: null, pushBranchesIgnore: null, pushTags: null, prBranches: null };
+  if (!text) return res;
+  const all = text.split(/\r?\n/);
+  let start = -1;
+  for (let i = 0; i < all.length; i++) {
+    // top-level `on:` at column 0 (YAML also lets it be quoted).
+    if (/^(on|["']on["'])\s*:/.test(all[i])) { start = i; break; }
+  }
+  if (start === -1) return res;
+  res.found = true;
+  const header = all[start];
+  const inline = header.slice(header.indexOf(":") + 1).replace(/#.*$/, "").trim();
+
+  // Inline forms `on: push` / `on: [push, pull_request]` carry no branch filters.
+  if (inline) {
+    const items = inline.startsWith("[") ? inline.replace(/^\[|\].*$/g, "").split(",") : [inline];
+    items.map((s) => s.trim().replace(/^["']|["']$/g, "")).filter(Boolean).forEach((e) => res.events.add(e));
+    return res;
+  }
+
+  // Block form: everything indented past column 0 belongs to the `on:` block.
+  const body = [];
+  for (let i = start + 1; i < all.length; i++) {
+    if (/^\S/.test(all[i])) break; // next column-0 key ends the block
+    body.push(all[i]);
+  }
+  const meaningful = body.filter((l) => l.trim() && !/^\s*#/.test(l));
+  if (!meaningful.length) return res;
+  const childIndent = Math.min(...meaningful.map((l) => l.match(/^(\s*)/)[1].length));
+
+  for (let i = 0; i < body.length; i++) {
+    const m = body[i].match(/^(\s*)([A-Za-z_][\w-]*)\s*:\s*(.*)$/);
+    if (!m || m[1].length !== childIndent) continue;
+    const ev = m[2];
+    res.events.add(ev);
+    if (ev !== "push" && ev !== "pull_request" && ev !== "pull_request_target") continue;
+    // The event's sub-block = following lines indented deeper than childIndent.
+    const sub = [];
+    for (let j = i + 1; j < body.length; j++) {
+      if (body[j].trim() === "") { sub.push(body[j]); continue; }
+      if (body[j].match(/^(\s*)/)[1].length <= childIndent) break;
+      sub.push(body[j]);
+    }
+    if (ev === "push") {
+      res.pushBranches = listField(sub, "branches");
+      res.pushBranchesIgnore = listField(sub, "branches-ignore");
+      res.pushTags = listField(sub, "tags");
+    } else {
+      const b = listField(sub, "branches");
+      if (b !== null) res.prBranches = b;
+    }
+  }
+  return res;
+}
+
+// Extract a YAML list field ("branches"/"tags") from an event sub-block. Handles the
+// flow form (`branches: [a, b]`), the block form (`branches:` then `- a` lines) and a
+// bare scalar (`branches: main`). Returns null when the field is absent entirely.
+function listField(subLines, field) {
+  const re = new RegExp("^(\\s*)" + field + "\\s*:\\s*(.*)$");
+  for (let i = 0; i < subLines.length; i++) {
+    const m = subLines[i].match(re);
+    if (!m) continue;
+    const indent = m[1].length;
+    const inline = m[2].replace(/#.*$/, "").trim();
+    if (inline) {
+      if (inline.startsWith("[")) {
+        return inline.replace(/^\[|\].*$/g, "").split(",").map((s) => s.trim().replace(/^["']|["']$/g, "")).filter(Boolean);
+      }
+      return [inline.replace(/^["']|["']$/g, "")];
+    }
+    const out = [];
+    for (let j = i + 1; j < subLines.length; j++) {
+      if (subLines[j].trim() === "") continue;
+      const bm = subLines[j].match(/^(\s*)-\s*(.+)$/);
+      if (bm && bm[1].length > indent) {
+        out.push(bm[2].replace(/#.*$/, "").trim().replace(/^["']|["']$/g, ""));
+        continue;
+      }
+      if (subLines[j].match(/^(\s*)/)[1].length <= indent) break; // dedent ends the list
+    }
+    return out;
+  }
+  return null;
+}
+
+// Minimal shell-glob for branch patterns like `release/*`. Plain names compare as
+// equality; only `*` and `?` are honoured — enough for GitHub branch filters.
+function globMatch(pattern, name) {
+  if (!/[*?[]/.test(pattern)) return pattern === name;
+  const rx = "^" + pattern.replace(/[.+^${}()|\\]/g, "\\$&").replace(/\*/g, ".*").replace(/\?/g, ".") + "$";
+  try { return new RegExp(rx).test(name); } catch { return false; }
+}
+
+// ------------------------------------------------------------------- repo acquisition
+
+function runGh(args) {
+  return execFileSync("gh", args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+}
+
+// A slug is fetched read-only through the API — nothing is cloned, nothing is written
+// into anyone's working tree.
+function readRemoteFile(slug, path) {
+  try {
+    return runGh(["api", `repos/${slug}/contents/${path}`, "-H", "Accept: application/vnd.github.raw"]);
+  } catch {
+    return null;
+  }
+}
+
+function listRemoteDir(slug, path) {
+  try {
+    const out = runGh(["api", `repos/${slug}/contents/${path}`, "--jq", ".[].name"]);
+    return out.split("\n").map((s) => s.trim()).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function listRemoteBranches(slug) {
+  try {
+    const out = runGh(["api", `repos/${slug}/branches`, "--paginate", "--jq", ".[].name"]);
+    return out.split("\n").map((s) => s.trim()).filter(Boolean);
+  } catch {
+    return null; // null = could not determine, distinct from "no branches"
+  }
+}
+
+// Labels live on GitHub, not in the working tree, so this is the audit's one check that
+// needs the tracker. `null` means "could not determine" — no remote, no auth, gh absent,
+// API error — and the caller stays SILENT on it rather than warning: unlike branches
+// (every git repo has them), labels are a GitHub-only concept and a remote-less or
+// offline audit legitimately cannot see them. A warn per offline repo would be noise,
+// and we cannot assert a label is missing when we could not read the set at all.
+function listRemoteLabels(slug) {
+  try {
+    const out = runGh(["api", `repos/${slug}/labels`, "--paginate", "--jq", ".[].name"]);
+    return out.split("\n").map((s) => s.trim()).filter(Boolean);
+  } catch {
+    return null;
+  }
+}
+
+// github.com/owner/name, git@github.com:owner/name.git → "owner/name". Non-GitHub or
+// unparseable remotes return null, so a local-only repo (or a self-hosted git remote)
+// contributes no label finding — matching the skill's "no remote" branch.
+function githubSlugFromRemote(url) {
+  if (!url) return null;
+  const m = String(url).trim().match(/github\.com[:/]+([^/]+)\/(.+?)(?:\.git)?\/?$/);
+  return m ? `${m[1]}/${m[2]}` : null;
+}
+
+// A uniform accessor so every check below is written once and works for both a local
+// path and a remote slug.
+function makeSource(target) {
+  if (target.kind === "local") {
+    const root = resolve(target.path);
+    return {
+      label: target.label,
+      kind: "local",
+      exists: existsSync(root),
+      readFile: (p) => {
+        const f = join(root, p);
+        return existsSync(f) ? readFileSync(f, "utf8") : null;
+      },
+      listDir: (p) => {
+        const d = join(root, p);
+        try {
+          return existsSync(d) ? readdirSync(d) : [];
+        } catch {
+          return [];
+        }
+      },
+      branches: () => {
+        try {
+          const out = execFileSync("git", ["-C", root, "for-each-ref", "--format=%(refname:short)", "refs/heads"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+          const list = out.split("\n").map((s) => s.trim()).filter(Boolean);
+          // Zero local branch refs plus a detached HEAD is what a shallow `pull_request`
+          // checkout looks like (actions/checkout defaults to fetch-depth 1 and checks out
+          // the merge commit detached, with no refs/heads at all) — not the same claim as
+          // "this repo genuinely has no branches". Report it the same way as "not a git
+          // checkout": unverifiable, not a trunk-missing finding (#104).
+          if (list.length === 0) {
+            try {
+              const head = execFileSync("git", ["-C", root, "rev-parse", "--abbrev-ref", "HEAD"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+              if (head === "HEAD") return null;
+            } catch {
+              // rev-parse itself failed — fall through and report the (empty) list as-is.
+            }
+          }
+          return list;
+        } catch {
+          return null; // not a git repo, or git unavailable
+        }
+      },
+      currentBranch: () => {
+        try {
+          return execFileSync("git", ["-C", root, "rev-parse", "--abbrev-ref", "HEAD"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+        } catch {
+          return null;
+        }
+      },
+      // A LINKED worktree is on a feature branch by design — that is the whole point of
+      // one. Only the main checkout owes the on-trunk invariant, so the caller skips the
+      // check here. Detection: git-dir sits under .git/worktrees/<name> in a linked tree,
+      // while git-common-dir always points at the real .git.
+      isLinkedWorktree: () => {
+        try {
+          const g = (a) => execFileSync("git", ["-C", root, "rev-parse", a], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+          const dir = resolve(root, g("--git-dir"));
+          const common = resolve(root, g("--git-common-dir"));
+          return dir !== common;
+        } catch {
+          return false;
+        }
+      },
+      // A local checkout has no labels of its own — they live on its GitHub remote, if it
+      // has one. Resolve the origin slug and read them there; a repo with no GitHub origin
+      // returns null and contributes no label finding.
+      labels: () => {
+        let url;
+        try {
+          url = execFileSync("git", ["-C", root, "remote", "get-url", "origin"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+        } catch {
+          return null;
+        }
+        const slug = githubSlugFromRemote(url);
+        return slug ? listRemoteLabels(slug) : null;
+      },
+      // Every tracked `*.md` path, repo-relative — used by the anchor-link check (#158).
+      // git-tracked, not a filesystem walk: an untracked scratch file citing a bogus
+      // anchor is not a repo finding. Empty array (not null) on any failure — the
+      // caller's contract is "nothing to check", not "unverifiable", because a local
+      // checkout with no `.md` files at all is a legitimate, silent pass.
+      markdownFiles: () => {
+        try {
+          const out = execFileSync("git", ["-C", root, "ls-files", "*.md"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+          return out.split("\n").map((s) => s.trim()).filter(Boolean);
+        } catch {
+          return [];
+        }
+      },
+    };
+  }
+  return {
+    label: target.label,
+    kind: "remote",
+    exists: true,
+    readFile: (p) => readRemoteFile(target.slug, p),
+    listDir: (p) => listRemoteDir(target.slug, p),
+    branches: () => listRemoteBranches(target.slug),
+    currentBranch: () => null,
+    isLinkedWorktree: () => false,
+    labels: () => listRemoteLabels(target.slug),
+    // Anchor-link check is local-only by design (#158) — enumerating markdown remotely
+    // would be N `gh api` calls per repo across a fleet sweep. Empty list = the check
+    // scans nothing and emits nothing for a remote source, matching checkRunbook's
+    // "would rather under-report than invent" posture for API-backed reads.
+    markdownFiles: () => [],
+  };
+}
+
+// --------------------------------------------------------------------- self-audit
+//
+// The sweep covers the handbook's CONSUMERS — and the handbook itself is in the repo
+// list, so it ends up asking the handbook whether it has copied the handbook. The
+// answer is permanently "no", and the two stamp advisories that follow can never be
+// cleared honestly: this repo's ci.yml is purpose-written rather than derived from
+// templates/ci-node.yml, and its CLAUDE.md is the source the conventions block is
+// extracted FROM, not a paste of it. Hand-stamping them would clear the output and
+// simultaneously make the repo claim it copied itself from a version of itself —
+// converting an honest advisory into a false claim, which is strictly worse than noise.
+//
+// Detected STRUCTURALLY, never by matching the string "colab-handbook": a fork or a
+// rename must keep working, and a consumer that merely happens to carry that name must
+// not inherit the exemption. Two structural facts, in order:
+//
+//   1. the target resolves to HANDBOOK_ROOT — the ordinary case.
+//   2. the target shares a git COMMON DIR with HANDBOOK_ROOT — a linked worktree of the
+//      handbook is still the handbook. Sessions run from a worktree while the repo list
+//      names the main checkout, so a path-only test would silently miss exactly when an
+//      agent is looking at the output.
+//
+// Remote (owner/name) targets are out of scope: recognising "self" through the API would
+// require the name match this deliberately avoids.
+
+// The predicate itself now lives in tools/lib/stamp.js, shared with `colab update`. It was
+// duplicated, and the copies had already drifted: this one compared git common dirs (worktree-safe)
+// while the CLI's compared path strings, so the same handbook was exempt here and audited as its
+// own consumer there. Only this target-shaped wrapper — kind, `~`, existence — stays local.
+function isHandbookItself(target) {
+  if (target.kind !== "local") return false;
+  const raw = target.path.startsWith("~") ? join(process.env.HOME || "", target.path.slice(1)) : target.path;
+  const root = resolve(raw);
+  if (!existsSync(root)) return false;
+  return stamp.isHandbookItself(root, HANDBOOK_ROOT);
+}
+
+// ------------------------------------------------------------------------- checks
+
+const BRANCH_RE = /^(feat|fix|docs|chore|refactor|test|perf)\/[a-z0-9._-]+$/;
+const INTEGRATION_BRANCHES = new Set(["main", "dev", "master", "trunk"]);
+// Tiers count the GATES between a merge and users: B has no production (0), C promotes and
+// that promotion IS the deploy (1), A promotes to verify and a tag deploys (2). They are
+// labels, not grades — C is not "worse than B"; B has no production at all.
+const VALID_TIERS = new Set(["A", "B", "C"]);
+const VALID_DEPLOY = new Set(["tag", "manual", "push-main", "none"]);
+// `ceremony` scales memory/record-keeping DEPTH, never the safety rails (claim discipline,
+// worktree isolation, reserved ports, squash + Closes #N, CI secret scan + build stay full-
+// strength on every value). Omission means "standard" — no existing repo's behaviour changes
+// by this field merely existing. `light` is for beta/throwaway repos nobody will comb through
+// history on; the two coherence rules below keep it from drifting onto a repo where that is
+// no longer true (project.schema.md "ceremony — optional").
+const VALID_CEREMONY = new Set(["standard", "light"]);
+
+// `writes` names which write-conflict prevention method a repo's sessions default to —
+// a separate axis from both `tier` and `ceremony` (project.schema.md "writes — optional").
+// Omission means "isolated", the fleet's status quo, so an unset key changes no behavior.
+const VALID_WRITES = new Set(["isolated", "serial"]);
+// `deploy` answers HOW a repo reaches production, never WHETHER it is tier A — the tier
+// test is "does a deploy target exist today?". `manual` describes the honest third case:
+// production exists, but shipping is a human running a documented runbook (rsync, compose
+// up) with no workflow and no tag trigger. Before it existed, such repos had to either
+// claim `tier: A, deploy: tag` (and fail the deploy-workflow rule) or claim `tier: B` and
+// declare `production: null` — a lie, which §8 calls the worst outcome we can produce.
+// `push-main` stays in the enum and always will: for the repos using it, a push to `main`
+// GENUINELY triggers the deploy, and a project.yml that describes something other than what
+// happens is the worst outcome this tool can produce (§8). It is a legitimate mechanism —
+// the finding is on the combination `tier: A` + `push-main` (see the tier A block), because
+// tier A's contract requires a release artifact gating production, which this shape has no
+// room for. That is a mismatch with the tier, not a defect in the mechanism — and `tier: C`
+// is where the mechanism fits, so the finding now has somewhere to point rather than only
+// telling repos what they are not.
+// NOTE: `stack` is deliberately NOT validated against a closed set. The old enum had
+// no value for a Capacitor mobile app and forced one of ours to be mislabelled, so the
+// enum was doing harm. It is now free-form documentation.
+
+function auditRepo(target, ctx) {
+  const src = makeSource(target);
+  const findings = []; // { level: 'fail'|'warn', text }
+  // `self` = this target IS the handbook, not one of its consumers. Surfaced in the
+  // report (and in --json) so the row reads as source-of-truth rather than clean-by-luck:
+  // a silent skip is indistinguishable from a check that quietly stopped working.
+  const isSelf = isHandbookItself(target);
+  const info = { repo: src.label, kind: src.kind, tier: null, self: isSelf, findings: [] };
+
+  const fail = (t) => findings.push({ level: "fail", text: t });
+  const warn = (t) => findings.push({ level: "warn", text: t });
+
+  if (!src.exists) {
+    fail(`path does not exist: ${target.path}`);
+    return finish();
+  }
+
+  // ---- .github/project.yml -------------------------------------------------
+  const rawCfg = src.readFile(".github/project.yml");
+  let cfg = null;
+  if (rawCfg === null) {
+    fail("no .github/project.yml — repo is undescribed (tier/trunk/deploy unknown)");
+  } else {
+    const { data, problems } = parseFlatYaml(rawCfg);
+    problems.forEach((p) => fail(`project.yml: ${p}`));
+    cfg = data;
+    const required = ["tier", "trunk", "production", "deploy", "stack"];
+    // `production: null` is legal and meaningful for Tier B, so test key PRESENCE,
+    // not truthiness.
+    const missing = required.filter((k) => !(k in data));
+    if (missing.length) fail(`project.yml: missing key(s): ${missing.join(", ")}`);
+  }
+
+  const tier = cfg?.tier ?? null;
+  const trunk = cfg?.trunk ?? null;
+  const production = cfg?.production ?? null;
+  const deploy = cfg?.deploy ?? null;
+  // Omission means "standard" (#9 step 3's "no existing repo changes behavior" guarantee) —
+  // so the raw value (possibly absent) is what gets validated against the enum, while the
+  // defaulted value is what the coherence rules below reason from.
+  const ceremonyRaw = "ceremony" in (cfg || {}) ? cfg.ceremony : null;
+  const ceremony = ceremonyRaw ?? "standard";
+  const autonomy = cfg?.autonomy ?? null;
+  info.tier = tier;
+
+  if (cfg) {
+    if (!VALID_TIERS.has(tier)) fail(`tier is ${JSON.stringify(tier)}, expected "A", "B" or "C"`);
+    if (deploy !== null && !VALID_DEPLOY.has(deploy)) fail(`deploy is ${JSON.stringify(deploy)}, expected one of: ${[...VALID_DEPLOY].join(", ")}`);
+    // Only when the key exists but is blank — a wholly absent key is already
+    // reported by the missing-keys check above, and saying it twice is noise.
+    if ("stack" in cfg && (cfg.stack === null || cfg.stack === "")) warn("stack is empty — set a free-form string describing the stack");
+    if (ceremonyRaw !== null && !VALID_CEREMONY.has(ceremonyRaw)) fail(`ceremony is ${JSON.stringify(ceremonyRaw)}, expected "standard" or "light" (omit for standard)`);
+
+    // ---- ceremony coherence (#79) -------------------------------------------
+    // `light` relaxes memory-ceremony DEPTH, never the two guarantees that protect anyone
+    // OTHER than this repo's own history: a live repo cannot skip its own audit trail, and
+    // an unattended merge needs an evidence trail exactly when nobody watched it happen.
+    if (ceremony === "light") {
+      if (production !== null && production !== "") {
+        fail(`ceremony: light requires production: null — a live repo cannot opt out of its own audit trail (found production: ${JSON.stringify(production)}). Drop to ceremony: standard, or this pairing is the same class of finding as tier: A + deploy: push-main`);
+      }
+      if (autonomy === "auto-trunk") {
+        fail(`ceremony: light is incompatible with autonomy: auto-trunk — an unattended merge with no evidence trail is a closure nobody can audit. Keep autonomy: auto-trunk and use ceremony: standard, or drop autonomy to manual`);
+      }
+    }
+
+    // ---- writes axis (#133) --------------------------------------------------
+    // Deliberately NOT coupled to tier/production/exposure — see CONVENTIONS.md §2 and
+    // project.schema.md. If you are reading this while adding an exposure key (#132), the
+    // ceremony/production coherence block above is yours to move; this block is not.
+    const writesRaw = "writes" in (cfg || {}) ? cfg.writes : null;
+    if (writesRaw !== null && !VALID_WRITES.has(writesRaw)) fail(`writes is ${JSON.stringify(writesRaw)}, expected "isolated" or "serial" (omit for isolated)`);
+
+    // ---- tier <-> trunk coherence ------------------------------------------
+    // The canonical Tier A shape is the dev/main split — sessions land on dev, main is the release
+    // branch — which buys a place for the expensive suite to run at promotion time. But a TAG-GATED
+    // A may run a SINGLE trunk `main`: when a version tag gates production, the tag itself marks the
+    // release boundary, so a second branch marking the same boundary (dev vs main) is redundant. The
+    // tier is defined by the promotion GATE (a deliberate release artifact — the tag), not the trunk
+    // NAME, so `main` is coherent here — and ONLY here. `deploy: manual`/`push-main` have no tag to
+    // mark the boundary, so they keep the dev split and its promotion as the ship-ward act.
+    if (tier === "A" && trunk !== "dev" && !(deploy === "tag" && trunk === "main")) {
+      fail(deploy === "tag"
+        ? `tier A with deploy: tag requires trunk "dev" or "main", found ${JSON.stringify(trunk)}`
+        : `tier A requires trunk "dev", found ${JSON.stringify(trunk)} — only a tag-gated A (deploy: tag) may run a single trunk "main"`);
+    }
+    if (tier === "B" && trunk !== "main") fail(`tier B requires trunk "main", found ${JSON.stringify(trunk)}`);
+    // C uses A's two-branch split: main = what is live, dev = where sessions land.
+    if (tier === "C" && trunk !== "dev") fail(`tier C requires trunk "dev", found ${JSON.stringify(trunk)} — C uses the same split as A (main = what is live, dev = where sessions land)`);
+  }
+
+  // ---- convention labels present on the tracker ---------------------------
+  // A convention label absent from an adopted repo is a check that can never fire: the
+  // claim (`in-progress`) cannot land, the readiness column (`deps-checked`) can never
+  // leave "nobody looked", provenance (`agent-filed`) reads every filed issue as human-
+  // approved. It happens when a repo adopted at an OLDER handbook version, before a label
+  // entered the set, and nothing back-filled it — so a repo missing the label passes clean
+  // while a downstream board keeps advising "run triage to fill the column", a no-op.
+  //   Gated on `cfg`: an undescribed repo already fails above, and labels are meaningless
+  // without adoption. `labels()` is null for a remote-less or offline audit (see
+  // listRemoteLabels) — we stay silent there, since we cannot assert a label is missing
+  // when we could not read the set. A warn, not a fail: the fix is one `gh label create`,
+  // it breaks no build and it does not make the descriptor lie.
+  if (cfg) {
+    const labels = src.labels();
+    if (labels) {
+      const missing = missingConventionLabels(labels);
+      if (missing.length) {
+        warn(
+          `missing convention label(s): ${missing.join(", ")} — a repo adopted before a ` +
+          `label entered the set never back-filled it, so the check it powers can never ` +
+          `fire. Create each (\`gh label create\`, see CONVENTIONS.md §9) or run handbook-sync`,
+        );
+      }
+    }
+  }
+
+  // ---- CLAUDE.md is a router, not an archive (#64) -------------------------
+  // Unconditional: this is a repo-doc concern, not a tier/deploy one, and it applies to
+  // the handbook's OWN CLAUDE.md too (not a stamp check, so it is not gated on !isSelf).
+  checkClaudeMdSize(src, warn);
+
+  // ---- markdown anchor links resolve (#158) --------------------------------
+  // Unconditional, same posture as checkClaudeMdSize above: general markdown hygiene,
+  // not a stamp/tier concern, applies to the handbook's own docs unchanged. A `§N`
+  // prose citation is invisible to this on purpose — only an actual `](file#slug)`
+  // link is checked, so the ~280 not-yet-migrated citations produce zero findings.
+  checkAnchorLinks(src, fail);
+
+  // ---- deploy workflow presence -------------------------------------------
+  const workflows = src.listDir(".github/workflows").filter((f) => /\.ya?ml$/.test(f));
+  const deployWorkflows = workflows.filter((f) => /^deploy[-.]/.test(f));
+
+  const runbook = cfg && "runbook" in cfg ? cfg.runbook : null;
+
+  if (tier === "A") {
+    // The answer to "how does this reach production?" must be committed. A CI-driven deploy commits
+    // it as an in-repo deploy-*.yml; a deploy that runs OUTSIDE CI must instead be WRITTEN DOWN in a
+    // runbook: — the same invariant, honoured two ways. Two shapes deploy outside CI:
+    //   - deploy: manual              → a human runs the runbook.
+    //   - deploy: tag with no workflow → an EXTERNAL deployer (a GitOps poller fast-forwards a
+    //                                    release branch on the tag, or the like) ships it; the
+    //                                    runbook documents that path. A deploy: tag repo whose own
+    //                                    CI holds the deploy job keeps its deploy-*.yml and needs no
+    //                                    runbook — the workflow already commits the answer.
+    const externalTagDeploy = deploy === "tag" && !deployWorkflows.length;
+    if (deploy === "manual") {
+      checkRunbook(src, runbook, fail, warn, "deploy: manual");
+    } else if (externalTagDeploy) {
+      checkRunbook(src, runbook, fail, warn, "deploy: tag deployed outside CI (an external GitOps poller)");
+    } else if (!deployWorkflows.length) {
+      fail("tier A but no .github/workflows/deploy-*.yml — the path to production is not in the repo (use deploy: manual + runbook: if it ships by hand, or deploy: tag + runbook: when a GitOps poller deploys the tag from outside CI)");
+    }
+    if (production === null || production === "") fail("tier A but production is null — set the live URL, or drop to tier B");
+    if (deploy === "none") fail('tier A with deploy: none is contradictory — use "tag" or "manual"');
+    // A TIER MISMATCH, not a bad mechanism. push-main is a perfectly good way to deploy;
+    // it just cannot satisfy tier A's contract, which is that a deliberate release artifact
+    // gates production. Here every push to main reaches users, so that gate does not exist.
+    // The message says "options include" on purpose: the two named exits are not exhaustive
+    // and must not read as though they were.
+    if (deploy === "push-main") {
+      fail(
+        "tier A with deploy: push-main — tier A's contract is that a deliberate release " +
+        "artifact gates production, and here every push to main reaches users with no such " +
+        "gate. Options include: retier to C (tier C is exactly this shape — promotion IS the " +
+        "deploy — and is the honest home for a live, low-stakes site), migrate the pipeline " +
+        "to a tag trigger (deploy: tag), or — if shipping really is run by hand — " +
+        "deploy: manual plus runbook: naming the committed procedure.",
+      );
+    }
+  } else if (tier === "C") {
+    // C = "promotion IS the deploy": one gate (the dev→main merge) stands between a merge and
+    // users. It exists because a tag ritual nobody honours is worse than no tag ritual — a
+    // live low-stakes site had nowhere honest to sit, so it claimed A and failed A's contract.
+    if (production === null || production === "") fail("tier C but production is null — tier C is for repos that ARE live; set the live URL, or drop to tier B");
+    if (!deployWorkflows.length) fail("tier C but no .github/workflows/deploy-*.yml — the path to production is not in the repo");
+    // C is defined by its mechanism: the promotion itself deploys. Any other `deploy` value
+    // describes a DIFFERENT number of gates, which is a different tier — so each wrong value
+    // is redirected to the tier that actually matches it, rather than being merely rejected.
+    if (deploy !== "push-main") {
+      if (deploy === "tag") {
+        fail('tier C with deploy: tag — a tag gating production is tier A\'s shape (promotion verifies, the tag deploys = two gates). If you really have a tag ritual, you are tier A; if the tag is aspirational, drop it and use deploy: push-main');
+      } else if (deploy === "manual") {
+        fail('tier C with deploy: manual — there the promotion does NOT deploy (a human running the runbook does), which is tier A with deploy: manual. Retier to A, or use deploy: push-main if the promotion itself ships');
+      } else if (deploy === "none") {
+        fail('tier C with deploy: none is contradictory — tier C means the promotion deploys. Use deploy: push-main, or drop to tier B if nothing is live');
+      } else {
+        fail(`tier C requires deploy: push-main, found ${JSON.stringify(deploy)} — C is defined as "promotion IS the deploy"`);
+      }
+    }
+  } else if (tier === "B") {
+    // This was silently unchecked before: a tier B repo that actually deploys is
+    // either mistiered or shipping to production with none of the tier A gates.
+    if (deploy !== null && deploy !== "none") fail(`tier B must have deploy: none, found ${JSON.stringify(deploy)} — if this really deploys, retier: C when the promotion itself ships, A when a tag or a runbook gates it`);
+    if (production !== null && production !== "") fail(`tier B must not declare a production URL, found ${JSON.stringify(production)} — retier to C (promotion deploys) or A (a tag/runbook gates the deploy)`);
+    if (deployWorkflows.length) fail(`tier B but a deploy workflow exists (${deployWorkflows.join(", ")}) — retier to C or A, or delete it`);
+  }
+
+  // ---- declared trunk actually exists -------------------------------------
+  const branches = src.branches();
+  if (trunk && branches === null) {
+    warn(`cannot list branches (not a git checkout, or gh unavailable) — trunk "${trunk}" unverified`);
+  } else if (trunk && branches && !branches.includes(trunk)) {
+    fail(`declared trunk "${trunk}" does not exist (branches: ${branches.slice(0, 6).join(", ")}${branches.length > 6 ? ", …" : ""})`);
+  }
+
+  // ---- the main checkout is on trunk at rest -------------------------------
+  // Other things read a repo's working tree — a dev server, a symlink, a LaunchAgent —
+  // and none of them know a session branched it. We branched one repo's main checkout
+  // for a chore; it ran always-on from that tree, so the live app served unmerged
+  // feature-branch code until a human noticed by eye. Sessions belong in a worktree;
+  // a checkout parked on a feature branch is the failure, not the work.
+  // Remote (owner/name) targets have no checkout, so currentBranch() is null there —
+  // stay silent rather than invent a violation, as with `branches === null` above.
+  const head = src.currentBranch();
+  if (trunk && head && head !== "HEAD" && head !== trunk && !src.isLinkedWorktree()) {
+    fail(`main checkout is on "${head}", not trunk "${trunk}" — anything reading this working tree (dev server, symlink, LaunchAgent) is serving that branch. Move the work to a worktree and return the checkout to ${trunk}`);
+  }
+
+  // ---- integration lines (optional, dev-side only) -------------------------
+  // A declared long-lived line that worktrees may be cut from and shipped back into. It is NOT a
+  // second trunk: nothing in the promote / tag / deploy path reads this field, which is what keeps
+  // such a line unable to reach production BY CONSTRUCTION rather than by discipline. The tier↔trunk
+  // coherence check above is deliberately untouched — relaxing `trunk:` was the rejected design,
+  // because on tiers A and C trunk IS the branch promotion consumes.
+  const integration = checkIntegration(cfg, trunk, branches, fail, warn);
+  // Declared lines are integration points, so they inherit trunk's exemptions: the §4 branch-name
+  // regex does not apply to them, and a workflow naming one is not referencing a ghost.
+
+  // ---- release branch (optional, production-side, opposite axis from integration) ----
+  // Names the branch an EXTERNAL GitOps poller fast-forwards on tag, in the single-trunk
+  // tag-gated shape (trunk: main). Unlike integration lines this is a PRODUCTION ref — it
+  // grants no worktree base, nothing here adds it to allowedBases() — but it needs the same
+  // naming-regex and ghost-branch exemptions integration lines get, for the same reason: it
+  // is a long-lived name a workflow or a human may reasonably reference. Its real payoff is
+  // in `colab doctor` (tools/colab), which otherwise reads it as a spent branch between
+  // releases and advises deleting a live deploy target (#63).
+  const releaseBranch = checkReleaseBranch(cfg, trunk, branches, fail, warn, deploy);
+  const exemptList = releaseBranch ? [...integration, releaseBranch] : integration;
+  const exempt = exemptList.length ? new Set([...INTEGRATION_BRANCHES, ...exemptList]) : INTEGRATION_BRANCHES;
+
+  // ---- branch naming -------------------------------------------------------
+  if (branches) {
+    const bad = branches.filter((b) => !exempt.has(b) && !BRANCH_RE.test(b));
+    if (bad.length) {
+      warn(`branch name(s) off-convention: ${bad.slice(0, 4).join(", ")}${bad.length > 4 ? ` (+${bad.length - 4})` : ""} — want <type>/<slug>`);
+    }
+  }
+
+  // ---- trunk is CI-gated ---------------------------------------------------
+  // Merges land on the trunk as PUSHES; if no CI workflow triggers on push to the
+  // declared trunk, every merge runs zero CI while everyone believes it is gated.
+  checkTrunkCiGated(src, trunk, workflows, branches, fail, warn, { integration, exempt });
+
+  // ---- toolchain agreement -------------------------------------------------
+  // Report disagreement; never auto-resolve. Three sources can disagree: the
+  // descriptor, the ecosystem manifest, and what the workflows actually pin.
+  const tool = collectToolchain(src, cfg, workflows);
+  tool.findings.forEach((f) => findings.push(f));
+
+  // ---- handbook reconciliation (stamps) -----------------------------------
+  // EXEMPTION, not suppression, and scoped by CONSTRUCTION: a single guarded STATEMENT
+  // rather than `if (!isSelf) { … }`, so a check somebody adds next to this one cannot
+  // silently inherit the exemption by landing inside the block. The handbook is not
+  // exempt from its own rules — every check above runs on it unchanged — it is exempt
+  // only from being audited as its own consumer.
+  //
+  // Note this is narrower than it may look: one of our Python+Node hybrids emits the
+  // SAME two advisory lines, legitimately (its ci.yml really is an unstamped copy).
+  // Identical text, opposite meanings — nothing here may generalise to that row.
+  if (!isSelf) checkStamps(src, ctx.handbook, ctx.templateNames, fail, warn, { ceremony });
+
+  function finish() {
+    info.findings = findings;
+    info.ok = !findings.some((f) => f.level === "fail");
+    info.clean = findings.length === 0;
+    return info;
+  }
+  return finish();
+}
+
+// `integration:` — the declared dev-side axis. Optional; absent is the normal case.
+//
+// It answers one question: which OTHER long-lived branches may a worktree legitimately be cut from
+// and shipped back into? A team keeping a line for a release months out otherwise has nowhere to put
+// it, and the two available workarounds are both worse: park the main checkout on it (the exact
+// state the on-trunk check exists to catch — everything reading that working tree serves the line),
+// or declare it as `trunk` (which points the promotion path at it, since on tiers A and C trunk is
+// what promotion consumes).
+//
+// The validity rules all defend the same boundary — that a declared line is a DEVELOPMENT
+// integration point and can never be a production one:
+//   - not `trunk`: trunk is already the primary integration point; listing it twice would give the
+//     same branch two sets of rules, one of which reaches production.
+//   - not `main`: on tiers A and C that is the release branch, and on tier B it is trunk. Either way
+//     it is the branch this field must never touch.
+//   - not literally `trunk`: a branch by that name is banned outright (§2 — trunk is a role).
+//   - it must EXIST: a declared line nobody cut is the "release branch nothing consumes" failure
+//     under a new name, and the CLI would cut worktrees from a ref that is not there.
+//
+// Returns the validated list (possibly empty) so callers can exempt these branches from the
+// naming regex and the ghost-branch advisory.
+function checkIntegration(cfg, trunk, branches, fail, warn) {
+  if (!cfg || !("integration" in cfg)) return [];
+  const raw = cfg.integration;
+  if (raw === null) return []; // `integration:` with nothing under it — an empty list, the default
+  if (!Array.isArray(raw)) {
+    fail(`integration must be a list of branch names, found ${JSON.stringify(raw)} — write it as "- <branch>" lines or [a, b]`);
+    return [];
+  }
+  const out = [];
+  for (const entry of raw) {
+    const b = entry === null || entry === undefined ? "" : String(entry).trim();
+    if (!b) { fail("integration contains an empty entry"); continue; }
+    if (b === trunk) {
+      fail(`integration lists the trunk ("${b}") — trunk is already the primary integration point; the field is for ADDITIONAL lines`);
+      continue;
+    }
+    if (b === "main") {
+      fail('integration lists "main" — that is the release branch (tiers A and C) or the trunk (tier B), and nothing on this axis may have a path to production');
+      continue;
+    }
+    if (b === "trunk") {
+      fail('integration lists "trunk" — "trunk" is a role, never a branch name (CONVENTIONS.md §2)');
+      continue;
+    }
+    if (out.includes(b)) { warn(`integration lists "${b}" twice`); continue; }
+    out.push(b);
+  }
+  if (Array.isArray(branches)) {
+    for (const b of out) {
+      if (!branches.includes(b)) fail(`integration line "${b}" does not exist as a branch — a declared line nobody cut is the same failure as a release branch nothing consumes`);
+    }
+  } else if (out.length) {
+    warn(`cannot list branches — integration line(s) ${out.join(", ")} unverified`);
+  }
+  return out;
+}
+
+// `releaseBranch:` — the declared external-deploy axis. Optional; absent is the normal case, and
+// most Tier A repos deploy from `main` itself and need no extra name.
+//
+// It answers a different question from `integration:`, on the opposite side of the fence: which
+// branch does an EXTERNAL GitOps poller fast-forward on release, in the single-trunk tag-gated
+// shape (`trunk: main`, `deploy: tag`)? That branch is, by construction, an ancestor of trunk
+// between releases — the release script fast-forwarded it to trunk's tip as of the last tag, and
+// trunk has moved on since — which reads identically to a spent session branch to any check that
+// reasons from ancestry alone. `colab doctor` is exactly that kind of check (tools/colab), and
+// undeclared it prints a ready-to-paste delete command for a ref a live deploy pipeline is
+// polling (#63). Declaring it here is what lets doctor tell the two apart.
+//
+// The validity rules mirror checkIntegration's, because both defend a declared name actually
+// meaning something — but the axis itself is inverted: this field is scoped to touch nothing
+// BUT production (a worktree may never be cut from it or ship into it), where integration's
+// whole guarantee is to never touch production at all.
+//   - not `trunk`: this field names a THIRD branch, distinct from trunk and from `main` — the
+//     single-trunk tag-gated shape already treats `main` as the release artifact's landing spot.
+//   - not `main`: same branch, same reasoning, stated for the same "fail closed on a malformed
+//     descriptor" reason integration's check states it.
+//   - not literally `trunk`: banned outright, same as everywhere (§2 — trunk is a role).
+//   - it must EXIST: a declared branch nobody cut is the identical failure this field exists to
+//     name — "a release branch nothing consumes" — just reached from the descriptor side instead
+//     of doctor's ancestry side.
+//
+// Returns the validated branch name, or "" (never a list — a repo has at most one).
+function checkReleaseBranch(cfg, trunk, branches, fail, warn, deploy) {
+  if (!cfg || !("releaseBranch" in cfg)) return "";
+  const raw = cfg.releaseBranch;
+  if (raw === null) return ""; // `releaseBranch:` with nothing under it — same as absent
+  if (Array.isArray(raw) || (typeof raw === "object" && raw !== null)) {
+    fail(`releaseBranch must be a single branch name, found ${JSON.stringify(raw)} — a repo has at most one`);
+    return "";
+  }
+  const b = String(raw).trim();
+  if (!b) { fail("releaseBranch is set but empty"); return ""; }
+  if (b === trunk) {
+    fail(`releaseBranch names the trunk ("${b}") — it must name a DIFFERENT branch than trunk (the single-trunk tag-gated shape already lands day-to-day work on trunk itself)`);
+    return "";
+  }
+  if (b === "main") {
+    fail('releaseBranch is "main" — that is trunk itself in the single-trunk tag-gated shape this field targets; name the separate branch the external poller actually watches');
+    return "";
+  }
+  if (b === "trunk") {
+    fail('releaseBranch is "trunk" — "trunk" is a role, never a branch name (CONVENTIONS.md §2)');
+    return "";
+  }
+  if (Array.isArray(branches)) {
+    if (!branches.includes(b)) {
+      fail(`releaseBranch "${b}" does not exist as a branch — a declared release branch nobody cut is the same failure as a release branch nothing consumes`);
+      return "";
+    }
+  } else {
+    warn(`cannot list branches — releaseBranch "${b}" unverified`);
+  }
+  // Advisory, not a failure: the field's only meaning is a tag fast-forwarding this branch, so a
+  // repo declaring it under any other `deploy:` is very likely describing a shape that does not
+  // exist yet, or that has already changed underneath the descriptor.
+  if (deploy !== "tag") {
+    warn(`releaseBranch "${b}" is declared but deploy is ${JSON.stringify(deploy)} — this field only means something for deploy: tag (an external poller fast-forwarding it on release)`);
+  }
+  return b;
+}
+
+// `CLAUDE.md` is the router (code-wrap A2), loaded in full into EVERY session before any
+// work starts. Issue #64: A2's rule was prose-only, and its own worst-case citation is
+// framed in LINES — which is structurally blind to the failure that actually occurred. A
+// repo audited clean at 197 lines carried 112,382 bytes because a single "pointer" row had
+// grown into a hand-maintained paraphrase of the whole document it was meant to point at:
+// 68,350 bytes, 60.8% of the file, 9.3x the next-largest row. Because CLAUDE.md sits in the
+// cached prompt PREFIX, that cost is paid on every TURN of every session, not once per
+// session — a byte ceiling on the whole file catches the aggregate, and a per-LINE ceiling
+// catches the specific signature: one physical line ballooning while nothing else grows.
+//
+// Deliberately NOT scoped to markdown table rows: a repo that routes with a bullet list
+// (`- docs/x.md — one line`) carries the identical risk if one bullet's line balloons, and
+// scanning physical lines catches both shapes without assuming either.
+//
+// Both thresholds are WARN, not FAIL. The issue that proposed them offered the numbers "as
+// a starting point rather than a recommendation", wanting calibration across adopting repos
+// before anything here becomes a hard gate — the goal is a finding with the measured number
+// ("state the condition"), not a build-breaking assertion of a still-uncalibrated one.
+const CLAUDE_MD_MAX_BYTES = 40 * 1024; // near the handbook's own cited worst case (39 KB / 452 lines)
+const CLAUDE_MD_LINE_MULTIPLE = 6; // "some small multiple of the [file's] median row"
+const CLAUDE_MD_LINE_ABS_FLOOR = 2048; // below this, flagging on multiple alone is noise (tiny medians make everything look huge)
+
+// #117: the byte ceiling above was built to catch hand-written accretion, but it counts
+// TOTAL file bytes — which also charges a repo for content it cannot shorten by the rule's
+// own logic: a derived block (e.g. a generated table of contents a script rebuilds from
+// another doc's headings) that a test elsewhere asserts matches byte-for-byte. That content
+// grows by construction, one line per source fact, and editing it by hand to "fix" the
+// advisory makes the repo's OWN gate red. A repo following the router rule perfectly still
+// gets charged for adopting a pattern the handbook prefers.
+//
+// The fix: let a repo mark a span as derived, and gate the advisory on AUTHORED bytes
+// (total minus every marked span) instead of total. Total is still reported — a file that
+// is mostly derived is still fully loaded into every session, and that cost stays visible —
+// but only authored bytes decide whether the finding fires. `id=` is required so a repo
+// with more than one generated block (e.g. a TOC and a changelog) can have both.
+const DERIVED_START_RE = /^<!--\s*colab:derived:start\s+id=(\S+)\s*-->\s*$/;
+const DERIVED_END_RE = /^<!--\s*colab:derived:end\s*-->\s*$/;
+
+/**
+ * Splits `text` into `{ authoredLines, derivedBytes, malformed }`. `authoredLines` holds
+ * every physical line (marker lines included, since they are structural annotations, not
+ * prose) EXCEPT lines inside a well-formed derived span. `malformed` lists any marker
+ * problem (unterminated start, stray end, nested start) — on malformed input we fail open:
+ * the offending span and everything after its unmatched marker is treated as AUTHORED, so a
+ * broken marker never hides real prose from the advisory it exists to inform.
+ */
+function splitDerivedSpans(text) {
+  const lines = text.split(/\r?\n/);
+  const authoredLines = [];
+  const malformed = [];
+  let openId = null;
+  let spanLines = [];
+
+  for (const line of lines) {
+    if (openId === null) {
+      const m = line.match(DERIVED_START_RE);
+      if (m) {
+        openId = m[1];
+        spanLines = [line];
+        continue;
+      }
+      if (DERIVED_END_RE.test(line)) {
+        malformed.push(`a colab:derived:end with no matching start`);
+        authoredLines.push(line); // stray end — keep it, it's just text at that point
+        continue;
+      }
+      authoredLines.push(line);
+    } else {
+      if (DERIVED_START_RE.test(line)) {
+        malformed.push(`nested colab:derived:start (id=${openId} was still open)`);
+        // Fail open: treat the whole thing-so-far as authored and stop tracking a span.
+        authoredLines.push(...spanLines, line);
+        openId = null;
+        spanLines = [];
+        continue;
+      }
+      spanLines.push(line);
+      if (DERIVED_END_RE.test(line)) {
+        openId = null; // well-formed span closes; its lines are NOT authored
+        spanLines = [];
+      }
+    }
+  }
+
+  if (openId !== null) {
+    malformed.push(`colab:derived:start id=${openId} was never closed`);
+    authoredLines.push(...spanLines); // fail open — count the unterminated span as authored
+  }
+
+  return { authoredLines, malformed };
+}
+
+// Minimal GitHub-compatible heading→anchor slugifier (#158). GitHub's real algorithm is
+// unpublished; this is deliberately the common-case subset, calibrated against the 47
+// anchor links already live in this repo (CLAUDE.md, CONVENTIONS.md, README*.md,
+// project.schema.md, skills/handbook-sync/SKILL.md, tools/README.md) — every one of
+// them resolves under it. Not a general markdown-heading parser: it does not need to be,
+// because the only headings it is ever asked to slugify are the ones already governing
+// the links this check exists to validate.
+function slugifyHeading(text) {
+  return text
+    .replace(/`([^`]*)`/g, "$1") // code spans contribute their literal text, not backticks
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1") // [text](url) contributes only the text
+    .trim()
+    .replace(/#+$/, "") // a trailing "##" some repos use to mark a self-anchor
+    .toLowerCase()
+    .replace(/[^\w\- ]+/g, "") // strip punctuation, keep word chars/hyphens/spaces -- NOT collapsed
+    .trim()
+    // Each space/underscore becomes its OWN hyphen -- never collapsed. GitHub does not
+    // merge runs: a heading like "tier -- required" strips the em-dash but keeps both
+    // spaces around where it was, producing "tier--required" (double hyphen), and every
+    // link already written against a real heading in this repo is punctuated that way.
+    // Collapsing here silently breaks every one of them.
+    .replace(/[ _]/g, "-");
+}
+
+// Every heading in `text`, in document order, mapped to its resolved slug — including
+// GitHub's duplicate-slug suffixing (`-1`, `-2`, … in heading order, not alphabetical).
+// Fenced code blocks are skipped so a `#` inside a code sample is never read as a heading.
+function collectHeadingSlugs(text) {
+  const slugs = new Set();
+  const seen = new Map(); // base slug -> next suffix to try
+  let inFence = false;
+  for (const line of text.split("\n")) {
+    if (/^\s*(```|~~~)/.test(line)) { inFence = !inFence; continue; }
+    if (inFence) continue;
+    const m = /^#{1,6}\s+(.+?)\s*$/.exec(line);
+    if (!m) continue;
+    const base = slugifyHeading(m[1]);
+    if (!base) continue;
+    const n = seen.get(base) ?? 0;
+    seen.set(base, n + 1);
+    slugs.add(n === 0 ? base : `${base}-${n}`);
+  }
+  return slugs;
+}
+
+// Every `](target#fragment)` markdown link, repo-relative to the file that carries it.
+// `target` is `""` for a same-file link (`[…](#slug)`); anything already resolved by the
+// caller. Deliberately link-shaped ONLY — a bare `§N` in prose, or a bare `FILE.md#slug`
+// mention with no `[...](...)` around it, is not a citation this check may touch (#158's
+// whole scope boundary: the ~280 un-migrated `§N` citations must be invisible to this).
+const ANCHOR_LINK_RE = /\]\(([^)#\s]*\.md)?#([^)\s]+)\)/g;
+
+// Blanks out fenced code blocks and inline `code spans` before the link scan runs, so a
+// doc that shows link syntax as a LITERAL EXAMPLE (this very file does, documenting this
+// very check) is never mistaken for a real citation. Same fence-skip as
+// collectHeadingSlugs, plus a same-line inline-span strip; not a full markdown parser,
+// just enough to keep a documented example from tripping the thing it documents.
+function stripCodeForLinkScan(text) {
+  const out = [];
+  let inFence = false;
+  for (const line of text.split("\n")) {
+    if (/^\s*(```|~~~)/.test(line)) { inFence = !inFence; out.push(""); continue; }
+    out.push(inFence ? "" : line.replace(/`[^`\n]*`/g, ""));
+  }
+  return out.join("\n");
+}
+
+function checkAnchorLinks(src, fail) {
+  if (src.kind !== "local") return; // remote enumeration is O(files) gh API calls — skip, not warn (see markdownFiles())
+  const files = src.markdownFiles();
+  const headingCache = new Map(); // repo-relative path -> Set<slug> | null (null = unreadable)
+
+  const slugsFor = (path) => {
+    if (headingCache.has(path)) return headingCache.get(path);
+    const text = src.readFile(path);
+    const result = text === null ? null : collectHeadingSlugs(text);
+    headingCache.set(path, result);
+    return result;
+  };
+
+  for (const file of files) {
+    const text = src.readFile(file);
+    if (text === null) continue; // listed by git but unreadable — not this check's concern
+    const dir = dirname(file);
+    let m;
+    ANCHOR_LINK_RE.lastIndex = 0;
+    const scanText = stripCodeForLinkScan(text);
+    while ((m = ANCHOR_LINK_RE.exec(scanText))) {
+      const [, rawTarget, fragment] = m;
+      // Fully qualified URLs are not repo-relative links, even when they end in `.md#...`.
+      if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(rawTarget)) continue;
+      const targetPath = rawTarget ? (rawTarget.startsWith("/") ? rawTarget.slice(1) : join(dir, rawTarget)) : file;
+      // http(s):// and mailto: never match `.md$`, so they are already excluded by
+      // ANCHOR_LINK_RE requiring the target (when present) to end in ".md".
+      const normalized = targetPath.split("/").filter((p) => p !== ".").join("/");
+      const slugs = slugsFor(normalized);
+      if (slugs === null) {
+        fail(`${file}: links to ${normalized}#${fragment}, but ${normalized} does not exist`);
+        continue;
+      }
+      if (!slugs.has(fragment)) {
+        const near = [...slugs].slice(0, 5);
+        fail(
+          `${file}: anchor #${fragment} does not resolve in ${normalized} — ` +
+          (near.length ? `nearest headings: ${near.join(", ")}` : "that file has no headings at all"),
+        );
+      }
+    }
+  }
+}
+
+function checkClaudeMdSize(src, warn) {
+  const text = src.readFile("CLAUDE.md");
+  if (text === null) return; // no CLAUDE.md here — a separate concern (project.yml already covers "undescribed")
+
+  const bytes = Buffer.byteLength(text, "utf8");
+  const { authoredLines, malformed } = splitDerivedSpans(text);
+  for (const problem of malformed) {
+    warn(`CLAUDE.md has a malformed colab:derived marker (${problem}) — treating the affected span as authored, not derived, until it's fixed`);
+  }
+
+  const authoredText = authoredLines.join("\n");
+  const authoredBytes = Buffer.byteLength(authoredText, "utf8");
+  const derivedBytes = Math.max(0, bytes - authoredBytes);
+
+  if (authoredBytes > CLAUDE_MD_MAX_BYTES) {
+    const totalNote = derivedBytes > 0
+      ? ` (of ${bytes} bytes total; ${derivedBytes} bytes are marked colab:derived and excluded — #117)`
+      : "";
+    warn(
+      `CLAUDE.md is ${authoredBytes} bytes (~${(authoredBytes / 1024).toFixed(1)} KB)${totalNote} — over the ` +
+      `${CLAUDE_MD_MAX_BYTES / 1024} KB advisory ceiling (#64). It is loaded in full into every session before ` +
+      `any work starts; if the knowledge belongs in docs/, the CLAUDE.md change is a pointer, not a copy (code-wrap A2)`,
+    );
+  }
+
+  // Median over non-empty PHYSICAL lines, derived spans excluded — a monster line is one
+  // that never wrapped, so a line-count-based reader (like A2's own cited metric) never
+  // sees it either. Excluding derived lines here too: a generated block can legitimately
+  // contain a long row, and that is not the "pointer became a copy" signature this hunts.
+  const lens = authoredLines.filter((l) => l.length > 0).map((l) => Buffer.byteLength(l, "utf8")).sort((a, b) => a - b);
+  if (lens.length < 2) return; // no meaningful median from 0 or 1 lines
+  const median = lens[Math.floor(lens.length / 2)];
+  const worst = lens[lens.length - 1];
+  if (median > 0 && worst > CLAUDE_MD_LINE_ABS_FLOOR && worst > median * CLAUDE_MD_LINE_MULTIPLE) {
+    const pct = ((worst / authoredBytes) * 100).toFixed(1);
+    warn(
+      `CLAUDE.md has a single line of ${worst} bytes — ${(worst / median).toFixed(1)}x the file's median line ` +
+      `(${median} bytes), ${pct}% of authored content (#64). That is the "pointer became a copy" signature: a ` +
+      `router line should name where the depth lives, not reproduce it`,
+    );
+  }
+}
+
+// `deploy: manual` promises that the hand-deploy procedure is written down and findable.
+// An unwritten runbook is how "only one person can ship this" happens, so the field is
+// required and the path is verified — but verification degrades by source:
+//
+//   local working tree  → authoritative. A declared path that is not on disk is a FAIL.
+//   remote (gh API)     → best-effort. A miss can mean "file absent" OR "the API read
+//                         failed" (private repo, token scope, rate limit, default branch
+//                         differs). Those are indistinguishable from here, so a miss is an
+//                         ADVISORY naming both possibilities. We would rather under-report
+//                         than invent a violation — the same reason `branches === null`
+//                         downgrades the trunk check to "unverified".
+// `why` names the deploy shape that OWES the runbook, so the finding reads honestly whether the
+// caller is `deploy: manual` (a human runs it) or `deploy: tag` deployed OUTSIDE CI (a GitOps
+// poller runs it). Both share the same invariant: the deploy runs off no in-repo workflow, so the
+// path to production must be WRITTEN DOWN or nobody but its author can ship it.
+function checkRunbook(src, runbook, fail, warn, why = "deploy: manual") {
+  if (runbook === null || runbook === "") {
+    fail(`${why} requires runbook: — name the committed doc that describes how production is reached (e.g. docs/deploy.md), or nobody but you can ship`);
+    return;
+  }
+  const path = String(runbook).trim().replace(/^\.\//, "");
+  if (src.readFile(path) !== null) return;
+  if (src.kind === "local") fail(`runbook "${runbook}" does not exist in the repo — ${why} points at a doc that is not there`);
+  else warn(`runbook "${runbook}" not found via the API — either it is missing, or the read failed (permissions/branch); verify in a checkout`);
+}
+
+// The bug this catches (found in the wild in three of our Tier A repos): a repo moved
+// its trunk (main -> dev) but its CI workflows' push triggers still named the OLD
+// branches, so every merge to the real trunk ran ZERO CI — silently — while the B1
+// gate ("check trunk CI is green") checked runs that could never exist.
+//
+// Deploy/release workflows are NOT CI gates: a deploy-*.yml firing on a push to main is a
+// deploy trigger, not a check, so it must never be counted as "the trunk is gated". We
+// exclude them by filename (deploy*/release*) and by trigger shape (a tags-only or
+// workflow_dispatch-only workflow does no branch gating and is not CI-type). This exclusion
+// is about what COUNTS AS CI here and says nothing about whether the setup is desirable —
+// a `deploy: push-main` repo is separately a tier A finding above.
+function checkTrunkCiGated(src, trunk, workflows, branches, fail, warn, { integration = [], exempt = INTEGRATION_BRANCHES } = {}) {
+  if (!trunk || !workflows.length) return;
+
+  const ci = []; // CI-type workflows: { wf, pushGate, prGate, refs }
+  for (const wf of workflows) {
+    if (/^(deploy|release)[-.]/.test(wf)) continue; // deploy/release by filename
+    const on = parseWorkflowOn(src.readFile(`.github/workflows/${wf}`));
+    if (!on.found) continue;
+
+    // Effective push branch gate: an array of patterns | "all" | {ignore:[…]} | null.
+    // Bare `push:` = every branch ("all"); `push:` with only tags = no branch push.
+    let pushGate = null;
+    if (on.events.has("push")) {
+      if (on.pushBranches !== null) pushGate = on.pushBranches;
+      else if (on.pushBranchesIgnore !== null) pushGate = { ignore: on.pushBranchesIgnore };
+      else if (on.pushTags !== null) pushGate = null; // tags-only push
+      else pushGate = "all";
+    }
+    const prGate = (on.events.has("pull_request") || on.events.has("pull_request_target"))
+      ? (on.prBranches !== null ? on.prBranches : "all")
+      : null;
+
+    // Not CI-type if it does no branch-based triggering (tags-only + dispatch, etc.).
+    if (pushGate === null && prGate === null) continue;
+
+    // Positive branch references, for the stale-reference advisory (ignore lists and
+    // glob patterns are not concrete "references" to a branch).
+    const refs = [];
+    for (const list of [on.pushBranches, on.prBranches]) {
+      if (Array.isArray(list)) for (const b of list) if (b) refs.push(b);
+    }
+    ci.push({ wf, pushGate, prGate, refs });
+  }
+
+  // No CI at all here is a DIFFERENT concern (does this repo want CI?) — out of scope.
+  // This check only catches CI that exists but points at the wrong branch.
+  if (!ci.length) return;
+
+  const pushGates = (g, branch) => {
+    if (g === "all") return true;
+    if (Array.isArray(g)) return g.some((p) => globMatch(p, branch));
+    if (g && g.ignore) return !g.ignore.some((p) => globMatch(p, branch));
+    return false;
+  };
+  const gatedBySomeWorkflow = (branch) => ci.some((c) => pushGates(c.pushGate, branch));
+
+  if (!gatedBySomeWorkflow(trunk)) {
+    const gates = ci.map((c) => {
+      if (Array.isArray(c.pushGate)) return `${c.wf} gates: ${c.pushGate.join(", ")}`;
+      if (c.pushGate === "all") return `${c.wf} gates: all branches`;
+      return `${c.wf}: pull_request only`;
+    });
+    fail(`trunk "${trunk}" is not CI-gated — no workflow triggers on push to it (${gates.join("; ")})`);
+  }
+
+  // A declared integration line without its own push gate is an ADVISORY, never a failure. Work
+  // merges into such a line the same way it merges into trunk, so ungated is a real gap — but a
+  // line that is not yet CI-gated is a normal early state, and failing the repo for it would push
+  // teams to declare the line nowhere (which is the state this field exists to end). Trunk's gate
+  // is the one that must exist, because trunk is what reaches a release.
+  for (const b of integration) {
+    if (!gatedBySomeWorkflow(b)) {
+      warn(`integration line "${b}" is not CI-gated — no workflow triggers on push to it, so merges into it run zero CI (advisory: an ungated line is a normal early state)`);
+    }
+  }
+
+  // Stale-reference advisory: a workflow names a branch that does not exist. Standard
+  // integration aliases (main/master/dev/trunk) and this repo's declared integration
+  // lines are exempt — teams list them defensively; the anti-pattern is a
+  // project-specific ghost like develop/workos.
+  if (Array.isArray(branches)) {
+    for (const c of ci) {
+      const ghosts = [...new Set(c.refs)]
+        .filter((b) => !/[*?[]/.test(b)) // glob patterns aren't concrete branches
+        .filter((b) => !exempt.has(b))
+        .filter((b) => !branches.includes(b));
+      if (ghosts.length) warn(`${c.wf} triggers on nonexistent branch(es): ${ghosts.join(", ")}`);
+    }
+  }
+}
+
+function collectToolchain(src, cfg, workflows) {
+  const findings = [];
+
+  // --- declared -------------------------------------------------------------
+  const declared = {
+    node: cfg && "node" in cfg ? cfg.node : null,
+    php: cfg && "php" in cfg ? cfg.php : null,
+    python: cfg && "python" in cfg ? cfg.python : null,
+  };
+
+  // --- manifest -------------------------------------------------------------
+  const manifest = {
+    node: null, nodeRaw: null, nodeFrom: null,
+    php: null, phpRaw: null, phpFrom: null,
+    python: null, pythonRaw: null, pythonFrom: null,
+  };
+
+  const nvmrc = src.readFile(".nvmrc");
+  if (nvmrc && nvmrc.trim()) {
+    manifest.nodeRaw = nvmrc.split("\n").find((l) => l.trim() && !l.trim().startsWith("#"))?.trim() ?? null;
+    manifest.node = normaliseVersion(manifest.nodeRaw);
+    manifest.nodeFrom = ".nvmrc";
+  }
+  const pkgRaw = src.readFile("package.json");
+  let pkg = null;
+  if (pkgRaw) {
+    try {
+      pkg = JSON.parse(pkgRaw);
+    } catch (e) {
+      findings.push({ level: "fail", text: `package.json does not parse: ${e.message.split("\n")[0]}` });
+    }
+  }
+  if (pkg && !manifest.node && pkg.engines?.node) {
+    manifest.nodeRaw = pkg.engines.node;
+    manifest.node = normaliseVersion(pkg.engines.node);
+    manifest.nodeFrom = "engines.node";
+  }
+
+  const composerRaw = src.readFile("composer.json");
+  let composer = null;
+  if (composerRaw) {
+    try {
+      composer = JSON.parse(composerRaw);
+    } catch (e) {
+      findings.push({ level: "fail", text: `composer.json does not parse: ${e.message.split("\n")[0]}` });
+    }
+  }
+  if (composer?.require?.php) {
+    manifest.phpRaw = composer.require.php;
+    manifest.php = normaliseVersion(composer.require.php);
+    manifest.phpFrom = "composer.json require.php";
+  }
+
+  // Python. Precedence mirrors node's: the dedicated version file first (pyenv's
+  // .python-version, which local tooling also reads), then the package manifest.
+  //
+  // requirements.txt is deliberately ABSENT from this list — it pins dependencies,
+  // never the interpreter. A repo carrying only a requirements.txt has declared
+  // nothing about which Python it runs on, and the undeclared-but-pinned advisory
+  // below is exactly the right thing to say about it.
+  const pyver = src.readFile(".python-version");
+  if (pyver && pyver.trim()) {
+    manifest.pythonRaw = pyver.split("\n").find((l) => l.trim() && !l.trim().startsWith("#"))?.trim() ?? null;
+    manifest.python = normaliseVersion(manifest.pythonRaw);
+    manifest.pythonFrom = ".python-version";
+  }
+  const pyproject = src.readFile("pyproject.toml");
+  if (pyproject && !manifest.python) {
+    // A line match, not a TOML parser: this tool is dependency-free by design, and
+    // requires-python is a single top-level string in [project].
+    const m = pyproject.match(/^\s*requires-python\s*=\s*["']([^"']+)["']/m);
+    if (m) {
+      manifest.pythonRaw = m[1];
+      manifest.python = normaliseVersion(m[1]);
+      manifest.pythonFrom = "pyproject.toml requires-python";
+    }
+  }
+
+  // --- what the workflows actually pin -------------------------------------
+  const pins = { node: [], php: [], python: [] };
+  for (const wf of workflows) {
+    const text = src.readFile(`.github/workflows/${wf}`);
+    if (!text) continue;
+    for (const [, v] of text.matchAll(/^\s*node-version:\s*["']?([^"'\s#]+)/gm)) {
+      if (!v.includes("${{")) pins.node.push({ wf, v: normaliseVersion(v) });
+    }
+    for (const [, v] of text.matchAll(/^\s*php-version:\s*["']?([^"'\s#]+)/gm)) {
+      if (!v.includes("${{")) pins.php.push({ wf, v: normaliseVersion(v) });
+    }
+    for (const [, v] of text.matchAll(/^\s*python-version:\s*["']?([^"'\s#]+)/gm)) {
+      if (!v.includes("${{")) pins.python.push({ wf, v: normaliseVersion(v) });
+    }
+  }
+
+  for (const eco of ["node", "php", "python"]) {
+    const d = declared[eco] ? normaliseVersion(declared[eco]) : null;
+    const m = manifest[eco];
+    const rawConstraint = manifest[`${eco}Raw`];
+    const from = manifest[`${eco}From`];
+
+    // Descriptor vs manifest. If the manifest states a range, the descriptor's
+    // concrete version must live inside it; otherwise compare them directly.
+    if (d && m) {
+      const agrees = isRange(rawConstraint) ? satisfiesConstraint(d, rawConstraint) : prefixAgree(d, m);
+      if (!agrees) {
+        findings.push({ level: "fail", text: `${eco}: project.yml=${d} but ${from}=${rawConstraint}` });
+      }
+    }
+
+    // Declared truth vs what the workflows actually pin. project.yml wins as the
+    // reference when present; otherwise the manifest is the reference.
+    const truthLabel = d ? "project.yml" : from;
+    const reference = d || m;
+    const referenceIsRange = !d && isRange(rawConstraint);
+    for (const p of pins[eco]) {
+      if (!p.v || !reference) continue;
+      const agrees = referenceIsRange ? satisfiesConstraint(p.v, rawConstraint) : prefixAgree(reference, p.v);
+      if (!agrees) {
+        const shown = referenceIsRange ? rawConstraint : normaliseVersion(reference);
+        findings.push({ level: "fail", text: `${eco}: ${truthLabel}=${shown} but ${p.wf} pins ${p.v}` });
+      }
+    }
+
+    // workflows disagreeing with EACH OTHER is the exact bug that started this:
+    // ci.yml on Node 20, deploy-xserver.yml on Node 22.
+    const pinned = pins[eco].filter((p) => p.v);
+    const inconsistent = pinned.some((p) => !prefixAgree(p.v, pinned[0].v));
+    if (inconsistent) {
+      findings.push({
+        level: "fail",
+        text: `${eco}: workflows disagree — ${pins[eco].map((p) => `${p.wf}=${p.v}`).join(", ")}`,
+      });
+    }
+
+    // Nothing declared anywhere, but CI pins something: the pin is the only source
+    // of truth and nobody can see it without opening the YAML.
+    if (!reference && pins[eco].length) {
+      findings.push({
+        level: "warn",
+        text: `${eco}: undeclared — only pinned inside ${[...new Set(pins[eco].map((p) => p.wf))].join(", ")} (declare it in project.yml)`,
+      });
+    }
+  }
+
+  return { findings };
+}
+
+// -------------------------------------------------------------------- config load
+
+function loadTargets(opts) {
+  const targets = [];
+
+  for (const p of opts.locals) {
+    targets.push({ kind: "local", path: p, label: labelForPath(p) });
+  }
+
+  const entries = [];
+  if (opts.slugs.length) {
+    entries.push(...opts.slugs);
+  } else if (!opts.locals.length) {
+    const cfg = resolveConfig(opts);
+    opts.resolvedConfig = cfg; // surfaced in the report header
+    for (const line of readFileSync(cfg.path, "utf8").split(/\r?\n/)) {
+      const s = line.replace(/#.*$/, "").trim();
+      if (s) entries.push(s);
+    }
+  }
+
+  for (const e of entries) {
+    // A path if it looks like one or exists on disk; otherwise an owner/name slug.
+    const looksPath = e.startsWith("/") || e.startsWith("~") || e.startsWith(".");
+    const expanded = e.startsWith("~") ? join(process.env.HOME || "", e.slice(1)) : e;
+    if (looksPath || existsSync(expanded)) {
+      targets.push({ kind: "local", path: expanded, label: labelForPath(expanded) });
+    } else if (/^[^/]+\/[^/]+$/.test(e)) {
+      targets.push({ kind: "remote", slug: e, label: e });
+    } else {
+      targets.push({ kind: "local", path: expanded, label: e }); // will report "does not exist"
+    }
+  }
+  return targets;
+}
+
+// Two path segments read better than one in a report: `company/project`.
+function labelForPath(p) {
+  const r = resolve(p.startsWith("~") ? join(process.env.HOME || "", p.slice(1)) : p);
+  const parent = basename(dirname(r));
+  return parent && parent !== "/" ? `${parent}/${basename(r)}` : basename(r);
+}
+
+// ------------------------------------------------------------------------- output
+
+function report(results, opts, ctx) {
+  if (opts.json) {
+    console.log(JSON.stringify({
+      generated: new Date().toISOString(),
+      handbook: { version: ctx.handbook.version, untagged: ctx.handbook.untagged, root: ctx.handbook.root },
+      configSource: opts.resolvedConfig?.source ?? (opts.locals.length || opts.slugs.length ? "ad-hoc (--local / positional)" : null),
+      results,
+    }, null, 2));
+    return;
+  }
+
+  // Header: which repo list + handbook version, so a scheduled run is self-documenting.
+  if (opts.resolvedConfig) console.log(`repo list: ${opts.resolvedConfig.source}`);
+  console.log(`handbook:  ${ctx.handbook.version}${ctx.handbook.untagged ? " (untagged — stamp checks inactive)" : ""}`);
+  console.log("");
+
+  const shown = opts.quiet ? results.filter((r) => !r.clean) : results;
+  const width = Math.max(0, ...shown.map((r) => r.repo.length));
+  const tierW = 6;
+
+  for (const r of shown) {
+    const tier = r.tier ? `tier ${r.tier}` : "tier ?";
+    const head = `${r.repo.padEnd(width)}  ${tier.padEnd(tierW)}`;
+    const cont = "".padEnd(width + 2 + tierW + 2); // continuation indent
+
+    const lines = [];
+    // The handbook's own row says WHY it carries no stamp findings. Without this it
+    // would read as clean-by-luck, which is indistinguishable from a check that
+    // quietly stopped working.
+    if (r.self) lines.push("⌂ handbook source — every rule applies except its own stamps (it has nothing to copy from)");
+    else if (r.clean) lines.push("✓");
+    r.findings.forEach((f) => lines.push(`${f.level === "fail" ? "⚠" : "·"} ${f.text}`));
+
+    // Repeat the name on every line so the output stays greppable.
+    lines.forEach((l, i) => console.log(`${i === 0 ? head : cont}  ${l}`));
+  }
+
+  const failed = results.filter((r) => !r.ok).length;
+  const warned = results.filter((r) => r.ok && !r.clean).length;
+  console.log("");
+  console.log(`${results.length} repo(s): ${results.length - failed - warned} clean, ${warned} with advisories, ${failed} with problems.`);
+}
+
+// The usage block is this file's own leading comment, rendered on demand.
+function helpText() {
+  return readFileSync(fileURLToPath(import.meta.url), "utf8")
+    .split("\n")
+    .filter((l) => l.startsWith("//"))
+    .map((l) => l.replace(/^\/\/ ?/, ""))
+    .join("\n");
+}
+
+// Returns the exit code rather than taking it — see the note in main.
+function runAudit(opts) {
+  const targets = loadTargets(opts);
+  if (!targets.length) die("nothing to audit — add entries to the repo list or pass --local <path>");
+
+  const ctx = { handbook: handbookInfo(HANDBOOK_ROOT), templateNames: templateNames(HANDBOOK_ROOT) };
+
+  const results = [];
+  for (const t of targets) {
+    try {
+      results.push(auditRepo(t, ctx));
+    } catch (err) {
+      // Degrade gracefully: one broken repo must never take the whole sweep down.
+      results.push({
+        repo: t.label,
+        kind: t.kind,
+        tier: null,
+        ok: false,
+        clean: false,
+        findings: [{ level: "fail", text: `audit crashed: ${err.message.split("\n")[0]}` }],
+      });
+    }
+  }
+
+  report(results, opts, ctx);
+  return results.every((r) => r.ok) ? 0 : 1;
+}
+
+// --------------------------------------------------------------------------- main
+
+/*
+ * Both branches below SET process.exitCode and let Node exit on its own once stdout
+ * has drained. process.exit() would not wait: writes to a pipe are asynchronous, so
+ * exiting straight after console.log() discards whatever is still buffered, handing
+ * the reader a truncated payload *with a success-looking exit code*. Nothing in the
+ * contract signals the failure, so a consumer parses garbage or silently sees less.
+ *
+ * Two things made this expensive to diagnose, both worth remembering:
+ *   - `| wc -c` does NOT reproduce it. A shell consumer drains greedily and wins the
+ *     race, reporting the full byte count. Only a reader that buffers stdout
+ *     (execFile/spawn — i.e. every tool that consumes --json) sees the cut.
+ *   - The threshold is the platform's pipe buffer: ~8 KB on macOS, 64 KB on Linux.
+ *     So it surfaces per-machine, and only once the report grows past it. Findings
+ *     inflate the payload faster than repo count does.
+ *
+ * The exit-code contract is unchanged: 0 clean, 1 findings, 2 usage error.
+ * (Block-comment syntax deliberately: helpText scrapes line comments, and this note
+ * is for maintainers, not users.)
+ */
+
+const opts = parseArgs(process.argv.slice(2));
+
+if (opts.help) {
+  console.log(helpText());
+  process.exitCode = 0;
+} else {
+  process.exitCode = runAudit(opts);
+}

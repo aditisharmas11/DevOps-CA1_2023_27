@@ -1,0 +1,24 @@
+# EXAMPLE fleet registry — this committed file is a FALLBACK and a format reference only.
+#
+# The real repo list is MACHINE-LOCAL and lives at ~/.colab/repos.txt (override the
+# directory with COLAB_HOME). It is intentionally NOT committed: this handbook repo may
+# be public, and a list of private repo paths/slugs is not something to publish.
+#
+# audit.mjs resolves its repo list in this order:
+#   1. --config <path>       explicit; errors if the path is missing
+#   2. ~/.colab/repos.txt    your private fleet list (used automatically when present)
+#   3. this file             the neutral example below (fallback only)
+#
+# Format — one entry per line, `#` starts a comment. Two accepted forms:
+#   /absolute/path/to/repo   audited from the working tree on this machine
+#   owner/name               audited through the GitHub API via `gh` (nothing cloned)
+# Local-only repos with no remote are valid — just give the path.
+#
+# To build your real list:
+#   mkdir -p ~/.colab
+#   cp audit/repos.txt ~/.colab/repos.txt   # then replace the examples with your repos
+
+# --- example entries (safe placeholders — replace in ~/.colab/repos.txt) ---
+# /Users/you/code/example-app
+# /Users/you/code/example-service
+# example-org/example-repo

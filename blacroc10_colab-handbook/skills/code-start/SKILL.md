@@ -1,0 +1,523 @@
+---
+name: code-start
+description: "Open a coding session the cheap way: learn the repo's tier/trunk from .github/project.yml, load the feature's context from its GitHub Issue instead of re-reading the codebase, claim the issue so parallel sessions don't collide, then branch off trunk in a worktree — the main checkout stays on trunk at rest, because dev servers, symlinks and LaunchAgents read that working tree and none of them know you branched it. Trigger phrases: 'start coding', 'start a session', 'open a coding session', 'begin work on issue', 'pick up issue', 'claim an issue', 'new worktree', 'set up a session'. Reads a `needs-plan` flag left by code-triage and
+runs code-plan when set, else writes a 3-5 line plan-lite stub. Pairs with code-wrap
+(then code-ship) at the end of the session."
+---
+
+# code-start — open a session: read marker → load Issue → claim → branch
+
+The goal is to spend as little context as possible. The Issue is the feature's
+external memory: one `gh issue view` reloads the plan and hard-won knowledge, so
+you never re-read the whole codebase. Claim before you start so two sessions
+never grab the same work. Close the session with **code-wrap**, then **code-ship**.
+
+Notation: `$N` = the feature's Issue number (keep it for the whole session).
+`<trunk>` = the branch sessions merge into (from `project.yml`, below).
+
+## 0. Say who you are — the URL, above all
+
+Skip this and every claim and worktree you create is **anonymous**: a dashboard row
+with a branch and no owner. Someone finding a stale claim then knows it is stale but
+not who to ask.
+
+**The two fields are not equivalent, and the skill used to imply they were.**
+
+| field | what it is | missing it costs |
+|---|---|---|
+| `--session-name` | **display text.** The column a human scans. | cosmetic — the row falls back to the URL tail: ugly, still reachable |
+| `--session` (URL) | **the only join key.** A consumer resolves a worktree to a live session through it: `worktree.session` → its `session_…` tail → the session. | structural — the row can never be linked to anyone |
+
+The name participates in **no join**. So a name with no URL is the worst of the three
+states: it *reads* as owned and still traces to nobody. Set the URL first; the name is
+a nicety on top of it. `colab` now warns when you supply a name alone.
+
+Nothing infers identity from the name, and nothing should: a worktree once sat next to
+a live session with a near-identical name and **was not it**. Absent identity renders
+as "unknown" — never as a guess.
+
+### Spawned by a dashboard? Part of your identity arrived with the prompt
+
+A session may be opened by an operator clicking a button rather than by a human
+typing. That spawn prompt has a fixed shape:
+
+> Run /code-start for issue(s) #N in `<repo>`. Spawned from `<dashboard>` by
+> `<operator>` at `<ts>` (intent `<id>`). Session name: `<name>`.
+
+Read it as questions already answered: `#N` is your issue, and `<name>` is the
+`--session-name` to pass through **verbatim** — do not invent a better one, and do
+not ask which issue was meant. What the dashboard cannot know is your session URL,
+so you still supply `--session` yourself, exactly as below.
+
+The dashboard only spawns: it writes no claim, no label, no merge. Every `colab` and
+`gh` call in this skill runs as it would for a human-opened session — one writer, and
+it is you.
+
+### Pass them as flags, not exports — if you are an agent
+
+```sh
+colab claim $N --worktree <name> \
+  --session "https://claude.ai/code/session_…" \
+  --session-name "import-fixes"          # short, human, about the WORK
+```
+
+- **An `export` does not survive between tool calls.** Each Bash call is its own shell,
+  so `export COLAB_SESSION=…` in step 0 has evaporated by the time `colab worktree new`
+  runs several steps later — silently producing the exact anonymous rows this step
+  exists to prevent. Flags are the only thing that reliably sticks for an agent.
+- **A human at one terminal may still export it once** (`export COLAB_SESSION=…`);
+  resolution is flag > env > empty, so both paths work. The env route is for people
+  with a persistent shell, not for agents.
+- **Do this before step 3**, not inside step 4. Sessions that work directly on trunk
+  still claim, and they deserve identity just as much as worktree sessions.
+- **Name it after the work, not the branch.** The table already shows the branch;
+  `import-fixes` or `payroll-hotfix` tells a human something new, `fix-import-115`
+  does not.
+- **Genuinely no session URL?** Then set the name alone and know what you have: a
+  cosmetic label, not a traceable row. It is a degraded state, not an equal choice.
+- **Got the URL later, or already created the worktree anonymous?**
+  `colab worktree tag <name> --session <url> [--session-name <s>]` repairs the worktree
+  *and* the claims hanging off it. No hand-editing of `~/.colab/state.json`.
+- **No `colab` installed?** Nothing breaks — the fields simply do not exist, and
+  claiming still works through `gh`.
+
+## 1. Read the repo marker
+
+```sh
+cat .github/project.yml        # tier, trunk, production, deploy, stack, ports
+```
+
+- Note `trunk` — it is `main` (Tier B) or `dev` (Tier A). Branch off it in step 4.
+- **File missing?** Treat the repo as **Tier B, trunk `main`**, say so in your
+  report, and propose adding the file (`CONVENTIONS.md` §3). Do not invent a tier.
+- Never create a branch literally named `trunk`; never create `dev` in a Tier B repo.
+- **Note `integration:` if it is there.** It lists long-lived lines the team keeps
+  (work for a release weeks out). Your base is still **trunk** unless the task says
+  otherwise — but if the work belongs to such a line, that is a decision to take
+  now, at step 4, because the base is what the session ships back into. Never cut
+  from a branch that is not trunk and not declared there.
+
+### `writes: serial`? Check the solo-flow shortcut before steps 2–4
+
+A `writes: serial` repo (or, legacy, `ceremony: light` — CONVENTIONS.md, *Solo flow*)
+may let this whole session skip issue, claim, and worktree — but only through the entry
+gate, never on your own say-so:
+
+```sh
+colab solo --session "$SESSION_URL" --session-name "<label>"
+```
+
+- **Neither `doc.writes` is `serial` nor `doc.ceremony` is `light`** → `colab solo`
+  refuses outright before checking anything else. Continue at step 2 below as normal;
+  solo flow does not apply here.
+- **Refused for a held reason** (a worktree, a claim, an unpushed branch elsewhere, a
+  dirty tree, someone else's solo lock, or a conflicting place-claim — CONVENTIONS.md,
+  *Place-claims*) → the repo qualifies in principle but ground isn't clean *right now*.
+  Report what was held and fall through to steps 2–4, full ceremony — do not retry solo
+  automatically; the holder is somebody's unfinished work.
+- **Opens** → this session may commit **straight to `<trunk>`** with plain Conventional
+  Commits, no pre-filed issue and no worktree. Skip steps 2–4 entirely — there is
+  nothing to load (no Issue is required to exist), nothing to claim, nothing to branch.
+  File an Issue only if a decision needs to survive this sitting (same `gh issue create`
+  as step 2, used on demand rather than as a gate). Go straight to committing the actual
+  work, then close with **code-wrap's solo exit path** (`colab solo --done`) instead of
+  its Phase A/B — there is no worktree to tear down and no claim to release, because
+  solo flow made neither (though it does hold a place-claim on this checkout while open —
+  `--done` releases it).
+- Report the same as step 5's shape, minus what solo flow never created: no Issue URL
+  unless you filed one, no branch/worktree line, and say plainly that this was a solo
+  session so a reader does not go looking for a claim that was never made.
+- **On a `writes: serial` repo taken through the FULL flow instead** (a worktree/branch,
+  because one of the two mandatory-branch conditions applied), run `colab place check`
+  on the trunk checkout before your first write to it, and again before any command that
+  writes there directly (not inside your own worktree) — the place-claim is what a
+  writer OTHER than `colab solo`'s own gate can verify, and a coordinator-spawned
+  implementer session is exactly the writer a spawn-time lock alone cannot see.
+
+Never take this path on a hunch that "surely nobody else is touching this repo right
+now" — that is exactly the honor-system judgement the entry gate exists to replace with
+a mechanical answer. If `colab` is not installed, solo flow has no gate to run through,
+so it is not available here: fall through to the full flow below.
+
+## 2. Load context from the feature's Issue — don't re-read the code
+
+```sh
+gh issue list --search "<slug>" --state all     # find the feature's Issue — all, not open
+gh issue view $N                                 # goal + plan + knowledge
+gh issue view $N --comments                      # prior-session log
+```
+
+- **`--state all`, never `--state open`** (`gh` defaults to open — you must pass
+  it). code-wrap closes the Issue at merge via `Closes #N`, correctly. So the
+  moment a feature ships its Issue goes invisible to an open-only lookup, this
+  step falls through to "No Issue" below, and you open a **duplicate** while every
+  decision and gotcha sits unread on the closed one — the precise loss the
+  Issue-as-memory model exists to prevent, arriving from the other direction.
+- **Match is CLOSED and the work continues** → read it *first*
+  (`gh issue view <N> --comments`), then reopen it: `gh issue reopen <N>`.
+  Never open a parallel Issue for a feature that already has one; two half-memories
+  are worse than one, because neither reader knows the other exists.
+- **Issue exists** → this is your whole context. Read only the paths it points
+  to, plus the repo's `CLAUDE.md` if present. Do not sweep the codebase.
+- **No Issue** → create one and put the plan in it (this is the memory the next
+  session reloads):
+  ```sh
+  gh label create in-progress --color FBCA04 --description "Claimed by an active session" 2>/dev/null || true
+  gh issue create --title "<type>: <feature>" --body-file <tmpfile>
+  ```
+  Body template:
+  ```md
+  ## Goal
+
+  ## Plan (checklist)
+  - [ ] …
+
+  ## Decisions / Knowledge
+
+  ## Gotchas
+
+  Filed-by: <boss (via <session>) | agent (<what prompted it>, session <name>)>
+  ```
+  Record the returned number as `$N`. If `colab` is installed, follow with
+  `colab issue-filed $N` — a best-effort notify event (`issue.filed`, #102) that lets an
+  external observer refresh its snapshot the moment the issue exists, instead of waiting
+  out its own poll interval. colab does not wrap issue creation itself, so this always runs
+  as a separate step right after `gh issue create` returns the number, never in place of it;
+  no `colab` on this machine means skip it, nothing else here depends on it.
+
+  **The `Filed-by:` line is not optional, and it is about intent — not about who
+  typed** (`CONVENTIONS.md` §5, *Provenance*). On this path you are almost always
+  transcribing work a person just asked for, so it is `Filed-by: boss` and **no
+  label**. If instead you are filing something *you* noticed and nobody approved,
+  say `agent` and add the label — and end the body with an `Ask:` line too
+  (`CONVENTIONS.md` §5, *Ask*): `permission | backlog | ruling | deferred(<trigger>)`,
+  so a reader never has to guess your ask class back out of the prose. Absent
+  line reads as `backlog`, so add it explicitly whenever it is anything else:
+  ```sh
+  gh label create agent-filed --color C5DEF5 --description "Filed by an agent on its own initiative — not human-approved" 2>/dev/null || true
+  gh issue create --title "…" --body-file <tmpfile> --label agent-filed
+  ```
+  Getting this backwards is not cosmetic in either direction: a human request
+  mislabelled `agent-filed` gets excluded from batch starts and sits untouched,
+  while agent-initiated work left unlabelled reads as approved and can be started
+  by a tool no person ever consulted.
+
+  **Belongs to an epic? Attach it as a real sub-issue, not a checklist line.** A
+  hand-edited `- [ ] #N` in the parent's body is maintained by nobody and drifts within
+  days; the native link is what `subIssues` / `subIssuesSummary` report, so a tool can
+  see the child exists. Both ids below are **node** ids (`I_kwDO…`) — the sub-issue
+  mutation does not take issue numbers, and the dependency REST endpoints take a
+  *different* kind of id again (`CONVENTIONS.md` §5, *Readiness*):
+  ```sh
+  P=$(gh issue view <epic> --json id -q .id); C=$(gh issue view $N --json id -q .id)
+  gh api graphql -f query='mutation($p:ID!,$c:ID!){addSubIssue(input:{issueId:$p,subIssueId:$c}){clientMutationId}}' \
+    -f p=$P -f c=$C
+  ```
+  Only when the parent is genuinely an epic for this work — do not invent a hierarchy
+  the repo has not chosen.
+- **No GitHub remote?** Keep the same structure in a tracked file
+  (`docs/sessions/<slug>.md`); code-wrap promotes it to an Issue if the repo goes
+  to GitHub later. Everything below that says "Issue" means this file instead.
+
+> **Open ≠ untouched.** An open Issue does not prove the work is undone — trackers
+> drift behind trunk. Before you build, verify:
+> ```sh
+> git log --oneline --all --grep="#$N"          # already merged?
+> grep -rl "<thing the issue describes>" <paths>  # already in the code?
+> ```
+> Already shipped → close it with evidence (sha + `file:line`), pick other work.
+> Partly shipped → narrow the task to what's actually missing before starting.
+
+### Two tiers of memory — know which one you're reading
+
+Closing an Issue at wrap is only safe because the durable knowledge was never
+supposed to live there alone:
+
+- **Task / session Issue** — the log of *one unit of work*: this plan, this
+  session's decisions, this branch's gotchas. code-wrap closes it at merge. It
+  stays readable forever (hence `--state all`), but nobody browses closed issues.
+  Knowledge left only here is not deleted; it is **buried**, which costs the same.
+- **Epic / umbrella Issue, and the repo's `docs/`** — the durable tier. A domain
+  map, an architecture decision, a gotcha that will bite again next quarter,
+  anything true after this feature ships: it belongs here. This is what code-wrap's
+  docs step exists to feed.
+
+So when you land on an epic, **read its body and its checklist table — do not trust
+its title.** An epic's title describes the ambition; its table describes what is
+actually done, in progress, and untouched. They diverge, and the table is the one
+that was maintained.
+
+If this session learns something that outlives the feature, plan to put it in the
+durable tier at wrap — not just in the session comment that closes with the issue.
+
+### Write the plan file — rung 0/1/2, before you claim (`CONVENTIONS.md` §5, *Planning*, #94)
+
+The Issue you just loaded is the coordinator's view; this file is yours to keep for the
+rest of the session. Convention: `.claude/plans/issue-$N.md`, in the **main checkout —
+outside any worktree you are about to create in step 4** (it has to exist before that
+worktree does, and survive after `code-ship` tears it down). Git-excluded, never
+committed.
+
+**Resolve the path, don't assume `$PWD` is the main checkout (#113).** You are running
+this step *before* step 4's worktree exists, so `$PWD` usually is the main checkout right
+now — but if you're resuming a session that's already inside a worktree, a bare
+`.claude/plans/issue-$N.md` silently reads/writes that worktree's own copy instead. Anchor
+it every time:
+
+```sh
+MAIN_REPO="$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")"
+PLAN="$MAIN_REPO/.claude/plans/issue-$N.md"
+```
+
+**Check for the flag first — you already have the data.** The `gh issue view $N` you ran
+above is a **direct fetch**, which is read-your-writes consistent; never re-check the flag
+through `gh issue list --search`, whose index can lag the triage run that just set it by
+minutes.
+
+```sh
+gh issue view $N --json labels -q '.labels[].name' | grep -qx needs-plan && echo FLAGGED
+```
+
+- **Flagged** → run [`code-plan`](../code-plan/SKILL.md) now, seeded with this Issue plus
+  the one-line reason `code-triage` left in a comment. It drafts the full rung-2 plan into
+  the same file. Do this before step 3's claim — the plan does not depend on holding the
+  issue, and a session that claims first and discovers mid-plan that the ask is genuinely
+  unclear has already told the world it is working on something it cannot yet describe.
+- **Not flagged** → write the rung-1 stub yourself, 3-5 lines, right now:
+  ```md
+  Intent: <one sentence>
+  Files: <expected to move>
+  Oracle: <what proves this done>
+  Stop: <condition that ends the session>
+  ```
+  **Cannot state the oracle line?** That is the ambiguity trigger firing, not a prompt to
+  guess. Stop, comment the question onto the Issue, and wait — do not drop to rung 0
+  and do not invent an oracle so the stub looks complete.
+- **Trivial/mechanical, oracle self-evident** → rung 0, nothing to write. Do not manufacture
+  a stub for the sake of having one.
+
+**Mid-session escalation.** A rung-1 stub that turns out to be sitting on a novel design,
+an ambiguous ask that only became visible once you were in the code, or a chain of
+dependent steps long enough that context is getting noisy — run `code-plan` then, append
+to the same file, and continue from the checkpoint. This is the identical mechanism the
+flagged path uses; the flag only decides which one runs *first*.
+
+**Resuming this session, or picking it back up after a context compaction?** Read the file
+before doing anything else — it is the anchor, cheaper than re-deriving intent from the
+Issue and the diff both. Append checkpoints here as you go; do not let a long session's
+intermediate conclusions live only in a context window that can be summarized out from
+under you.
+
+**Deviating from what you or `code-plan` wrote?** Note it in the file, briefly, with why —
+a plan is a sketch the code is allowed to overrule, not a contract, but the next reader
+(you, resumed, or `code-ship` grading the diff) needs the *why* written down, not just the
+divergence.
+
+## 3. Check claims, then claim before you start
+
+**Source of truth is GitHub** (visible from any machine, to any person):
+
+```sh
+# check what's taken
+colab claims          # if colab is installed …
+gh issue list --label in-progress    # … else the raw command
+
+# claim it (before starting, not when you open the PR)
+colab claim $N        # if colab is installed …
+gh issue edit $N --add-assignee @me --add-label in-progress    # … else raw
+```
+
+> **On the default path, do not run `colab claim` here.** `colab worktree new
+> --issues $N` in step 4 claims as it creates, so claiming twice is a wasted step —
+> and for a long time it was worse than wasted: the second command refused your own
+> claim from the first. That is fixed, but one command is still the right shape.
+> Run the bare `colab claim $N` above **only** when you are taking the plain-branch
+> path, or when you want the issue held before you are ready to build anything.
+
+- An unclaimed issue is fair game — someone may take it out from under you.
+  Claim first.
+- A branch may carry a group of issues; claim **every** issue in the group now
+  (`colab claim 115 114 113`, or one `gh issue edit` each). Claiming the whole
+  group is load-bearing at wrap, not bookkeeping — see step 4.
+
+### A clean label does not mean clean ground
+
+**No `in-progress` label no longer proves nobody has touched this issue.**
+code-wrap's B3 releases the claim **unconditionally** — every issue the branch
+carried, finished or not, worktree torn down or kept. That is deliberate: a
+conditional release is one agents skip, a claim outlives the session it names, and
+a kept-but-forgotten worktree would otherwise hold its issues forever with **no
+health check able to flag it** (the worktree is alive, so the claim looks healthy).
+
+The tradeoff is that the label stopped being a lock, so **this step carries the
+compensating check.** Before you create a branch or a worktree, look for work that
+already exists on that issue:
+
+```sh
+git fetch --prune origin                   # ← without this the check is blind (see below)
+git branch -a --list '*<issue-number>*'    # a previous session's branch may still exist
+colab worktrees                            # if colab is installed — is a worktree holding it?
+gh issue view $N --json labels -q '.labels[].name|select(startswith("group:"))'
+```
+
+- **`git fetch` first, always.** A stale clone cannot see a branch pushed from
+  another machine, and the check then reports clean ground with total confidence —
+  the one failure mode it exists to prevent. Verified: an unfetched clone lists
+  nothing for a branch that demonstrably exists upstream.
+- The glob is a substring match, so it **over-matches** — `'*23*'` also returns
+  `feat/thing-230`. That is the right direction to be wrong in: you are eyeballing
+  a short list, and a false positive costs a glance while a false negative costs a
+  duplicate branch.
+- Use `colab worktrees`, not `colab claims`, for this: B3 already released the
+  claims, so a kept worktree shows up in the worktree list and **nowhere else**.
+- **A `group:` label means your issue is not alone.** Triage found that these issues touch
+  the same files, so they must move on **one** branch (`CONVENTIONS.md` §5, *Grouping*).
+  List the members and read the `Because:` line that carries the collision:
+  ```sh
+  gh issue list --label "group:<key>" --state open        # every member
+  gh issue view $N --comments | grep -A1 '^Group: '       # the file:line that justified it
+  ```
+  Then take **the whole group** — claim every member (above) and put every number in the
+  trailing run of one branch name (step 4). Splitting a group is how two sessions merge
+  over each other, which is the thing the group was computed to prevent. If you are
+  deliberately breaking it (the collision is gone), remove the label from the members it
+  no longer covers and say so in your report — nothing else removes it, and a stale group
+  label reads exactly like a live one.
+- **No `group:` label is not proof of no collision** — it can equally mean nobody has
+  triaged this issue. Run [`code-triage`](../code-triage/SKILL.md) if you are unsure;
+  do not read absence as clearance.
+- **Found one → continue it, or ask.** Do not open a second branch on an issue
+  that already has one; you will each merge over the other's work.
+- **Editing files that already exist? Ask who holds them — by file, not by issue.**
+  Every check above is keyed to *your issue number* or to a `group:` label, and both
+  are blind to a live branch editing your file under an unrelated issue. For shared
+  prose (`CONVENTIONS.md`, a skill, a README) that is the ordinary case, not the
+  exotic one:
+  ```sh
+  colab holders <path>
+  ```
+  Every row printed is a ref that touched `<path>` and has **not** landed — filtered
+  through the same content classification `colab landed` uses, not just "any ref that
+  ever touched it" (a busy repo's full history, otherwise: measured at 28 refs against
+  `CONVENTIONS.md` alone on this repo's own history, of which one held live work — and
+  that gap does not shrink by waiting for a sweep; a repo mid-teardown is still a repo
+  that has not finished one, which is exactly when this check has to be correct).
+  Empty output — or a path that does not
+  exist yet — is clean ground. Non-empty means group onto their branch, or sequence
+  after it lands; never a parallel branch on a file someone else is holding
+  (`CONVENTIONS.md` §5, *Writing a conclusion down*). **It fetches for you** — the
+  enumeration reads local refs, so a branch pushed by another session and never fetched
+  here would be invisible, and it refuses (exit 2) to report "clean ground" when it could
+  not fetch rather than answering off stale data. A row reporting `unknown` still means
+  *look*, never *assume clear*. No `colab` installed: `git fetch --prune origin` first,
+  then `git log --all --not origin/<trunk> --source --format='%S' -- <path> | sort -u` —
+  the fetch is not optional there either, and it is coarser besides, since it cannot tell
+  a shipped branch from a live one; check each ref by hand.
+
+This check is the deliberate price of unconditional release, not an oversight in it.
+
+## 4. Branch off the base — worktree by default
+
+Name it per `CONVENTIONS.md` §4 — pattern, and the issue number(s) at the end.
+**Always branch off `<trunk>`, never off another feature branch.**
+
+**The base is a session fact — record it, do not leave it implied.** It is `<trunk>`
+in the ordinary case, and a **declared** `integration:` line when the work belongs to
+one (step 1). Nothing else is ever a base: a feature branch is one session's work in
+flight, while a declared line is a published integration point the team maintains.
+
+The base is also the branch's **merge target** — `colab ship` merges into what the
+worktree records, never into trunk-by-default. That is one decision, not two: a branch
+cut from a line and merged into trunk would carry the whole line in behind it, as a
+single squash commit that reads like a small change. So state your base in the report,
+and code-wrap will state which branch it merged into.
+
+**Why the naming rule is load-bearing downstream** (what §4 doesn't say): code-wrap's
+B1b harvests the issue set for the squash message from exactly two places — the
+**branch name** and the **commit bodies** — cross-checked against the claim registry.
+An issue that appears in neither the branch name nor your claims is one code-wrap
+will never find. It gets no `Closes #N`, so it sits open indefinitely with its code
+already merged — the failure §4 cites at 26/30 issues, reached by a different route.
+Naming the branch correctly *now* is what makes the wrap correct later.
+
+Mechanical detail for group branches: **the numbers must be at the end.** B1b anchors
+extraction to the **trailing** digit group precisely because a naive sweep is wrong —
+it reads `feat/oauth2-login-88` as issues 2 and 88. Put every number in one trailing
+run (`fix/import-fixes-115-114-113`) and claim all of them in step 3; those are the
+same set, and B1b treats a number in one but not the other as a finding to chase.
+
+### The invariant: the main checkout is on trunk at rest
+
+**Always. No exceptions.** Other things read that working tree — a dev server, a
+symlink, a LaunchAgent — and none of them know you branched it.
+
+Measured: a session branched a repo's main checkout to do a chore. That repo ran
+always-on from it, so **the live app served unmerged feature-branch code** until a
+human noticed by eye. The condition was documented here as "only if … a live trunk
+dev server you must not disturb", and the agent still took the default — because a
+conditional rule is one agents skip.
+
+**Worktree — the default.** It honours the invariant by construction:
+
+```sh
+colab worktree new <type>/<slug>-$N --issues $N --ports 1 \
+  --session "$SESSION_URL" --session-name "<label>"     # claims AND creates — one command
+#   … add --base <line> ONLY for a line declared in project.yml `integration:`;
+#   the base is recorded on the worktree and is what `colab ship` merges into.
+# … else fall back to plain git (then claim by hand, step 3):
+git worktree add -b <type>/<slug>-$N ../<slug>-$N origin/<trunk>
+```
+
+`--issues` does the claiming, which is why step 3 tells you not to claim separately on
+this path. Pass **every** issue the branch will carry (`--issues 115,114,113`) — that
+set and the branch name are the two places code-wrap's harvest reads.
+
+**Repeat the identity flags here** (step 0): as an agent you cannot rely on an export
+made in an earlier tool call, and this is the command whose row a dashboard shows.
+
+**Plain branch — allowed, but only with a commitment.** Fine on a repo nothing reads
+from and where a worktree is more setup than the work deserves. If you take it, you
+own returning the checkout to trunk before you wrap; code-wrap verifies it.
+
+```sh
+git fetch origin <trunk>
+git checkout -b <type>/<slug>-$N origin/<trunk>
+```
+
+**Verify before you start working**, whichever path you took:
+
+```sh
+git -C <repo-root> branch --show-current    # must print <trunk>
+```
+
+If that prints a feature branch, you are in the failure this rule exists to prevent —
+stop and move the work to a worktree.
+
+- Ports listed in any repo's `project.yml` `ports:` are **reserved** for that
+  repo's trunk dev server — never reuse them for a worktree, even while the trunk
+  server is down. `colab` enforces this; without it, pick a port by hand and check
+  the reserved list first.
+- **Machine-specific setup — DB clones, dependency symlinks, dev-server wiring —
+  is NOT improvised here.** It belongs in the repo's `.colab/hooks/post-create`,
+  which `colab worktree new` runs automatically. If the repo has no such hook,
+  the worktree starts bare; set up only what you personally need and do not bake
+  it into this flow. *(Machine-specific automation hooks in here: `.colab/hooks/`.)*
+
+## 5. Report
+
+- Issue URL (`gh issue view $N --json url -q .url`) or the notes-file path, and
+  whether you **reopened** a closed Issue rather than creating one.
+- The session name you set in step 0 — it is how a human matches your report to the
+  row holding this work. Confirm it stuck: `colab worktrees` (or `colab claims`)
+  should show it, not a `—`. A name showing with **no URL behind it** is a half-fix,
+  not a pass: repair it with `colab worktree tag <name> --session <url>` and say so.
+- Branch name, **the base it was cut from**, and the worktree path if you made one. Say
+  the base even when it is trunk — "cut from trunk" and "nobody recorded a base" read
+  identically otherwise, and only the first is a fact. If the step-3 check found an
+  existing branch or worktree for this issue, say so and say what you did about it.
+- What you loaded from the Issue and your plan (checklist groups, file split if
+  fanning out to sub-agents).
+- **The plan rung** — 0, 1, or 2 — and, if 2, whether it came from a `needs-plan` flag
+  or a mid-session escalation.
+- Remind: close the session with **code-wrap** to ship and distill knowledge back
+  onto the Issue, then **code-ship** to merge.
