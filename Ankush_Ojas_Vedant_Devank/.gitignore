@@ -1,0 +1,11 @@
+Checkpoints/
+datasets/
+report_assets/
+*.csv 
+*.env
+.venv/
+DEMO.md
+# Keep local workspace artifacts out of version control
+artifacts/
+__pycache__/
+REPORT.md
