@@ -1,0 +1,272 @@
+From ec6cd5db141cfe6299e2e6ce544424a7a75d6259 Mon Sep 17 00:00:00 2001
+From: Sanidhya Awasthi <sanidhya.awasthi@bfhl.in>
+Date: Tue, 18 Aug 2026 16:14:23 +0530
+Subject: [PATCH 1/2] Skip overspent sources when a named cleanup pool collects
+ funds
+
+The end of month cleanup did not check whether a category set to send its
+leftover funds to a named pool actually had a positive balance. An overspent
+category was still processed, so its negative balance was budgeted back onto
+itself and subtracted from the amount available to the pool, pushing the
+overspending onto the other categories in the group.
+
+Global sources already guard against this and warn instead. Apply the same
+check to named pool sources so an overspent category is skipped and reported.
+
+Closes #8739
+---
+ .../server/budget/cleanup-template.test.ts    | 167 ++++++++++++++++++
+ .../src/server/budget/cleanup-template.ts     |  24 ++-
+ .../fix-cleanup-pool-negative-balances.md     |   6 +
+ 3 files changed, 191 insertions(+), 6 deletions(-)
+ create mode 100644 packages/loot-core/src/server/budget/cleanup-template.test.ts
+ create mode 100644 upcoming-release-notes/fix-cleanup-pool-negative-balances.md
+
+diff --git a/packages/loot-core/src/server/budget/cleanup-template.test.ts b/packages/loot-core/src/server/budget/cleanup-template.test.ts
+new file mode 100644
+index 000000000..f30f281f8
+--- /dev/null
++++ b/packages/loot-core/src/server/budget/cleanup-template.test.ts
+@@ -0,0 +1,167 @@
++import { vi } from 'vitest';
++
++import * as db from '#server/db';
++import type { CleanupTemplate } from '#types/models/cleanup-templates';
++
++import * as actions from './actions';
++import { cleanupTemplate } from './cleanup-template';
++
++vi.mock('./actions', () => ({
++  getSheetValue: vi.fn(),
++  setBudget: vi.fn(),
++  setGoal: vi.fn(),
++}));
++
++vi.mock('#server/db', () => ({
++  all: vi.fn(),
++  first: vi.fn(),
++}));
++
++vi.mock('./cleanup-template-notes', () => ({
++  storeNoteCleanups: vi.fn(),
++}));
++
++const MONTH = '2026-08';
++const GROUP_ID = 'pool-1';
++
++type TestCategory = {
++  id: string;
++  name: string;
++  cleanup_def: CleanupTemplate[];
++};
++
++function setup({
++  categories,
++  sheetValues,
++}: {
++  categories: TestCategory[];
++  sheetValues: Record<string, number>;
++}) {
++  vi.mocked(db.all).mockImplementation(async (sql: string) => {
++    if (sql.includes('cleanup_groups')) {
++      return [{ id: GROUP_ID, name: 'Something' }];
++    }
++    return categories.map(c => ({
++      id: c.id,
++      name: c.name,
++      is_income: 0,
++      cleanup_def: JSON.stringify(c.cleanup_def),
++    }));
++  });
++  // No carryover rows, so overspending never rolls over in these tests.
++  vi.mocked(db.first).mockResolvedValue(null);
++  vi.mocked(actions.getSheetValue).mockImplementation(
++    async (_sheet: string, key: string) => sheetValues[key] ?? 0,
++  );
++}
++
++function budgetedFor(categoryId: string) {
++  return vi
++    .mocked(actions.setBudget)
++    .mock.calls.map(([args]) => args)
++    .filter(args => args.category === categoryId);
++}
++
++describe('cleanupTemplate - named pool sources', () => {
++  beforeEach(() => {
++    vi.clearAllMocks();
++  });
++
++  test('does not drain a source whose balance is negative', async () => {
++    setup({
++      categories: [
++        {
++          id: 'cat-1',
++          name: 'Category 1',
++          cleanup_def: [{ role: 'sink', groupId: GROUP_ID, weight: 1 }],
++        },
++        {
++          id: 'cat-2',
++          name: 'Category 2',
++          cleanup_def: [{ role: 'source', groupId: GROUP_ID }],
++        },
++      ],
++      sheetValues: {
++        'leftover-cat-1': -1500,
++        'budget-cat-1': 6000,
++        // Category 2 overspent, so it has nothing to send to the pool.
++        'leftover-cat-2': -1000,
++        'budget-cat-2': 5000,
++        'to-budget': 0,
++      },
++    });
++
++    await cleanupTemplate({ month: MONTH });
++
++    // Draining the source budgets `budgeted - balance`, which for a negative
++    // balance credits the category instead of taking from it (5000 - -1000).
++    expect(budgetedFor('cat-2')).not.toContainEqual(
++      expect.objectContaining({ amount: 6000 }),
++    );
++  });
++
++  test('warns that the overspent source has no available funds', async () => {
++    setup({
++      categories: [
++        {
++          id: 'cat-1',
++          name: 'Category 1',
++          cleanup_def: [{ role: 'sink', groupId: GROUP_ID, weight: 1 }],
++        },
++        {
++          id: 'cat-2',
++          name: 'Category 2',
++          cleanup_def: [{ role: 'source', groupId: GROUP_ID }],
++        },
++      ],
++      sheetValues: {
++        'leftover-cat-1': -1500,
++        'budget-cat-1': 6000,
++        'leftover-cat-2': -1000,
++        'budget-cat-2': 5000,
++        'to-budget': 0,
++      },
++    });
++
++    const result = await cleanupTemplate({ month: MONTH });
++
++    expect(result.message).toBe('cleanup-no-funds');
++    expect(result.pre ?? '').toContain(
++      'Category 2 does not have available funds.',
++    );
++  });
++
++  test('still drains a source that has positive leftover funds', async () => {
++    setup({
++      categories: [
++        {
++          id: 'cat-1',
++          name: 'Category 1',
++          cleanup_def: [{ role: 'sink', groupId: GROUP_ID, weight: 1 }],
++        },
++        {
++          id: 'cat-2',
++          name: 'Category 2',
++          cleanup_def: [{ role: 'source', groupId: GROUP_ID }],
++        },
++      ],
++      sheetValues: {
++        'leftover-cat-1': 0,
++        'budget-cat-1': 6000,
++        'leftover-cat-2': 1000,
++        'budget-cat-2': 5000,
++        'to-budget': 0,
++      },
++    });
++
++    const result = await cleanupTemplate({ month: MONTH });
++
++    // The source gives up its leftover: 5000 - 1000.
++    expect(budgetedFor('cat-2')).toContainEqual(
++      expect.objectContaining({ amount: 4000 }),
++    );
++    expect(result.pre ?? '').not.toContain(
++      'Category 2 does not have available funds.',
++    );
++  });
++});
+diff --git a/packages/loot-core/src/server/budget/cleanup-template.ts b/packages/loot-core/src/server/budget/cleanup-template.ts
+index 0ac1eb9bc..d92c03ccf 100644
+--- a/packages/loot-core/src/server/budget/cleanup-template.ts
++++ b/packages/loot-core/src/server/budget/cleanup-template.ts
+@@ -22,6 +22,7 @@ async function applyGroupCleanups(
+   sinkGroups: GroupSinkRow[],
+   overspendGroups: GroupOverspendRow[],
+   groupNamesById: Map<string, string>,
++  categoryNamesById: Map<string, string>,
+ ) {
+   const sheetName = monthUtils.sheetForMonth(month);
+   const warnings = [];
+@@ -41,16 +42,25 @@ async function applyGroupCleanups(
+     if (sinkGroup.length > 0 || overspendGroup.length > 0) {
+       //only return group source funds to To Budget if there are corresponding sinking groups or underfunded included groups
+       for (let ii = 0; ii < tempSourceGroups.length; ii++) {
++        const categoryId = tempSourceGroups[ii].category;
+         const balance = await getSheetValue(
+           sheetName,
+-          `leftover-${tempSourceGroups[ii].category}`,
+-        );
+-        const budgeted = await getSheetValue(
+-          sheetName,
+-          `budget-${tempSourceGroups[ii].category}`,
++          `leftover-${categoryId}`,
+         );
++
++        // A source that is overspent has no leftover funds to send to the pool.
++        // Taking its negative balance would move the overspending onto the sink
++        // categories instead, so skip it and warn - the same way global sources
++        // are handled in processCleanup.
++        if (balance < 0) {
++          const categoryName = categoryNamesById.get(categoryId) ?? categoryId;
++          warnings.push(categoryName + ' does not have available funds.');
++          continue;
++        }
++
++        const budgeted = await getSheetValue(sheetName, `budget-${categoryId}`);
+         await setBudget({
+-          category: tempSourceGroups[ii].category,
++          category: categoryId,
+           month,
+           amount: budgeted - balance,
+         });
+@@ -183,6 +193,7 @@ async function processCleanup(month: string): Promise<TemplateNotification> {
+     'SELECT id, name FROM cleanup_groups WHERE tombstone = 0',
+   );
+   const groupNamesById = new Map(groupRows.map(g => [g.id, g.name]));
++  const categoryNamesById = new Map(categories.map(c => [c.id, c.name]));
+ 
+   //run category groups
+   const newWarnings = await applyGroupCleanups(
+@@ -191,6 +202,7 @@ async function processCleanup(month: string): Promise<TemplateNotification> {
+     groupSink,
+     groupOverspend,
+     groupNamesById,
++    categoryNamesById,
+   );
+   warnings.splice(1, 0, ...newWarnings);
+ 
+diff --git a/upcoming-release-notes/fix-cleanup-pool-negative-balances.md b/upcoming-release-notes/fix-cleanup-pool-negative-balances.md
+new file mode 100644
+index 000000000..854b84ec4
+--- /dev/null
++++ b/upcoming-release-notes/fix-cleanup-pool-negative-balances.md
+@@ -0,0 +1,6 @@
++---
++category: Bugfix
++authors: [Islinger19]
++---
++
++Skip overspent categories when a named cleanup pool collects leftover funds, instead of moving their negative balance onto the other categories in the pool
+-- 
+2.50.1 (Apple Git-155)
+
