@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-python@v7.0.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: astral-sh/setup-uv@v8.3.2
+      - name: Sync locked environment
+        run: uv sync --locked --group dev
+      - name: Lint
+        run: uv run ruff check .
+      - name: Format check
+        run: uv run ruff format --check .
+      - name: Type check
+        run: uv run mypy
+      - name: Test
+        run: uv run pytest
+      - name: Build distributions
+        run: uv build
+      - name: Smoke test installed wheel
+        shell: bash
+        run: |
+          python -m venv /tmp/action-contract-smoke
+          /tmp/action-contract-smoke/bin/pip install dist/*.whl
+          /tmp/action-contract-smoke/bin/action-contract validate examples/safe-read.yaml
+          /tmp/action-contract-smoke/bin/action-contract lint examples/reversible-write.yaml
+          /tmp/action-contract-smoke/bin/action-contract explain examples/irreversible-deploy.yaml

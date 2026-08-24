@@ -1,0 +1,27 @@
+version: "1"
+id: repository.report.write
+description: Write a generated report into a Git repository
+actor:
+  id: report-agent
+  type: agent
+delegation:
+  principal: user:maintainer
+  expires_at: "2026-07-20T18:00:00Z"
+capability: filesystem.write
+effect: write
+resources:
+  - file:reports/output.md
+risk: medium
+approval:
+  mode: explicit
+recovery:
+  reversible: true
+  undo: git restore reports/output.md
+notification:
+  timing: before
+cost:
+  kind: free
+evidence:
+  outputs:
+    - sha256:reports/output.md
+    - git:working-tree-diff
